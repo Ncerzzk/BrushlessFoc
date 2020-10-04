@@ -66,6 +66,10 @@ void Error_Handler(void);
 #define SENSE2_GPIO_Port GPIOA
 #define SENSE1_Pin GPIO_PIN_2
 #define SENSE1_GPIO_Port GPIOA
+#define LED_GREEN_Pin GPIO_PIN_4
+#define LED_GREEN_GPIO_Port GPIOC
+#define LED_RED_Pin GPIO_PIN_5
+#define LED_RED_GPIO_Port GPIOC
 #define BR_SO2_Pin GPIO_PIN_0
 #define BR_SO2_GPIO_Port GPIOB
 #define BR_SO1_Pin GPIO_PIN_1
@@ -76,8 +80,8 @@ void Error_Handler(void);
 #define EN_GATE_GPIO_Port GPIOC
 #define ENCODER_CSN_Pin GPIO_PIN_11
 #define ENCODER_CSN_GPIO_Port GPIOC
-#define FAULT_Pin GPIO_PIN_12
-#define FAULT_GPIO_Port GPIOC
+#define FAULT_Pin GPIO_PIN_4
+#define FAULT_GPIO_Port GPIOB
 #define ENCODER_CLK_Pin GPIO_PIN_6
 #define ENCODER_CLK_GPIO_Port GPIOB
 #define ENCODER_MISO_Pin GPIO_PIN_7

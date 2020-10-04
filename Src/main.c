@@ -23,6 +23,7 @@
 #include "adc.h"
 #include "can.h"
 #include "dma.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "usb_otg.h"
@@ -30,12 +31,15 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "uart_ext.h"
+#include "encoder.h"
+#include "as5047.h"
+#include "foc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+extern uint32_t cnt;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -71,7 +75,7 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  uint16_t adc_value[2]={0};
   /* USER CODE END 1 */
   
 
@@ -92,17 +96,32 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
   MX_DMA_Init();
+  MX_GPIO_Init();
   MX_ADC1_Init();
   MX_ADC2_Init();
+
+
+
   MX_CAN1_Init();
   MX_TIM1_Init();
   MX_TIM8_Init();
-  MX_USART6_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
-  /* USER CODE BEGIN 2 */
+  MX_UART5_Init();
 
+  MX_SPI1_Init();
+  MX_TIM6_Init();
+  MX_TIM7_Init();
+  /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start(&htim7);
+  debug_uart_init(&huart5,DMA,DMA);
+  As5047_Init(0,ENCODER_CSN_GPIO_Port,ENCODER_CSN_Pin);
+  Foc_Init();
+  Init_OK();
+
+  uprintf_polling("hello,world2!\r\n");
+
+  //;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -110,7 +129,12 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+    if(buffer_rx_OK){
+      UART_Command_Analize_And_Call();
+    }
 
+    //uprintf("%d\r\n",Get_Position());
+    //HAL_Delay(100);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -132,7 +156,7 @@ void SystemClock_Config(void)
   /** Initializes the CPU, AHB and APB busses clocks 
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
