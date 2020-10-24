@@ -43,7 +43,10 @@ mylib/as5047.c \
 mylib/pid.c \
 Src/gpio.c \
 Src/SVPWM.c \
+Src/parameter.c \
 Src/arm_sin_cos_f32.c \
+Src/arm_sin_f32.c \
+Src/arm_cos_f32.c \
 Src/arm_common_tables.c \
 Src/foc.c \
 Src/cmd_fun.c \

@@ -2,20 +2,45 @@
 #define __FOC_H
 
 #include "SVPWM.h"
+#include "pid.h"
+
 typedef struct
 {
-    uint8_t pairs;
+    uint8_t Pairs;
+    float Position_Phase_Offset;
+    uint8_t Encoder_Direction;
     float R;
     float L;
-    int8_t direction;
-    // 电机的运转方向，约定在开环模式下，电机按u4->u6方向运行（电角度增大），机械角度也增大为正方向
-    // 此参数与电机 a b c 三相的焊接有关
-    // 此参数仅在有感模式中(SENSOR_FOC)有用
-} Motor_Info;
+}Motor_Parameter;
+
+typedef enum{
+    IDLE=0x00,
+    OPENLOOP,
+    DUTY,
+    CURRENT,
+    SPEED,
+    POSITION
+}Mode;
 
 
-
+extern Motor_Parameter Motor;
+extern PID_S Id_PID;
+extern PID_S Iq_PID;
+extern PID_S Speed_PID;
+extern PID_S Position_PID;
 
 void Foc_Init();
+extern float Id_Set;
+extern float Iq_Set;
+extern float Speed_Set;
+extern float Position_Degree_Set;
+
+extern float Base_Speed;
+extern float Speed_Attitude;
+
+extern float Base_Duty;
+extern float Duty_Amp;
+
+extern uint8_t Wave_Flag;
 
 #endif

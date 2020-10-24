@@ -35,11 +35,14 @@
 #include "encoder.h"
 #include "as5047.h"
 #include "foc.h"
+#include "parameter.h"
+//#include "sing.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 extern uint32_t cnt;
+extern const uint8_t voice[];
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -113,13 +116,18 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start(&htim7);
   debug_uart_init(&huart5,DMA,DMA);
   As5047_Init(0,ENCODER_CSN_GPIO_Port,ENCODER_CSN_Pin);
+  Read_Parameters(1);
   Foc_Init();
+
+  //Song_Init(&htim7,5000,0.3f,voice,297973);
+
   Init_OK();
 
   uprintf_polling("hello,world2!\r\n");
+
+  //
 
   //;
   /* USER CODE END 2 */
@@ -132,9 +140,6 @@ int main(void)
     if(buffer_rx_OK){
       UART_Command_Analize_And_Call();
     }
-
-    //uprintf("%d\r\n",Get_Position());
-    //HAL_Delay(100);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -183,6 +188,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
 
 /* USER CODE END 4 */
 

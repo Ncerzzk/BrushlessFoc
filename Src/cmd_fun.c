@@ -1,16 +1,24 @@
 #include "cmd_fun.h"
 #include "command.h"
 #include "uart_ext.h"
-
+#include "foc.h"
+#include "pid.h"
 
 typedef struct{
   char * var_name;
   void * value_ptr;
 }Var_Edit_Struct;
 
-Var_Edit_Struct Var_List[10]={
+Var_Edit_Struct Var_List[]={
   //{"first",&First_Time_Check}
-  0
+  {"id",&Id_Set},
+  {"iq",&Iq_Set},
+  {"sp",&Speed_Set},
+  {"pos",&Position_Degree_Set},
+  {"base_sp",&Base_Speed},
+  {"sp_a",&Speed_Attitude},
+  {"duty",&Base_Duty},
+  {"duty_amp",&Duty_Amp}
 };
 
 #define  STR(x) #x
@@ -64,7 +72,9 @@ void set_val(int arg_num,char ** s,float * args){
 /*
 下面定义用户需要的函数
 */
-#include "foc.h"
+
+
+
 extern void Set_to_Un(uint8_t t,Uvect_Mos target,float duty);
 extern Uvect_Mos U4;
 extern float Position_Degree;
@@ -96,6 +106,10 @@ void detect(int arg_num,char **s,float *args){
 extern uint8_t FOC_Flag;
 void start(int arg_num,char **s,float *args){
   if(arg_num!=0x0001){
+    Iq_PID.i=0;
+    Id_PID.i=0;
+    Speed_PID.i=0;
+    Position_PID.i=0;
     FOC_Flag = !FOC_Flag;
     uprintf_polling("OK! flag=%d\r\n",FOC_Flag);
     return ;
@@ -104,8 +118,57 @@ void start(int arg_num,char **s,float *args){
     FOC_Flag=1;
   }else{
     FOC_Flag=0;
+    Set_Vector(U0,0.1f);
   }
   uprintf_polling("OK! flag=%d\r\n",FOC_Flag);
+}
+
+/*
+extern uint8_t Song_Start;
+void song(int arg_num,char **s,float *args){
+  Song_Start = !Song_Start;
+  uprintf_polling("OK,song = %d\r\n",Song_Start);
+}
+*/
+
+#include "parameter.h"
+void wrtie_param(int arg_num,char **s,float *args){
+  Write_Parameter();
+  uprintf("OK,Save Params\r\n");
+}
+
+void wave(int arg_num,char **s,float * args){
+  Wave_Flag = !Wave_Flag;
+}
+
+void set_PID(int arg_num,char ** s,float * args){
+  PID_S * pid_s=0;
+  float * kpkdki=0;
+  if(arg_num!=0x0201){
+    uprintf("error arg_num!\r\n");
+    return ;
+  }
+  if(compare_string(s[0],"d")){
+    pid_s=&Id_PID;
+  }else if(compare_string(s[0],"q")){
+    pid_s=&Iq_PID;
+  }else if(compare_string(s[0],"sp")){
+    pid_s=&Speed_PID;
+  }else if(compare_string(s[0],"pos")){
+    pid_s=&Position_PID;
+  }
+
+
+  pid_s->i=0;
+  if(compare_string(s[1],"p")){
+    kpkdki=&(pid_s->KP);
+  }else if(compare_string(s[1],"d")){
+    kpkdki=&(pid_s->KD);
+  }else if(compare_string(s[1],"i")){
+    kpkdki=&(pid_s->KI);
+  }
+  *kpkdki=args[0];
+  uprintf("ok set %s 's %s = %f\r\n",s[0],s[1],args[0]);
 }
 
 /*
@@ -113,10 +176,15 @@ void start(int arg_num,char **s,float *args){
 */
 void command_init(void){
   add_cmd("test",test); 
+  add_cmd("set",set_val);
   add_cmd("set_u4",set_to_u4);
   add_cmd("test_direction",test_direction);
   add_cmd("detect",detect);
   add_cmd("start",start);
+  add_cmd("set_pid",set_PID);
+  add_cmd("write",wrtie_param);
+  add_cmd("wave",wave);
+  //add_cmd("song",song);
 }
 
 

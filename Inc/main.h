@@ -88,6 +88,10 @@ void Error_Handler(void);
 #define ENCODER_MISO_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
+#define FOC_FREQ  8000
+#define TIM7_FREQ 1000
+#define SPEED_FREQ 4000
+#define POSITION_FREQ 4000
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
