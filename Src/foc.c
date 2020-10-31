@@ -61,6 +61,8 @@ Mode Last_Mode=DUTY;
 float Id_Set=0;
 float Iq_Set=0.6f;
 
+float Phi = 0;
+
 PID_S Id_PID ={
     .KP=2,
     .KD=0,
@@ -264,11 +266,12 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
             if(Board_Mode>=CURRENT){
                 Current_Control();
             }else if(Board_Mode == DUTY){
-                float duty = Base_Duty + Duty_Amp * arm_sin_f32(Position_Degree/180.0f*3.1415926f);
+                float duty = Base_Duty + Duty_Amp * arm_sin_f32((Position_Degree-Phi)/180.0f*3.1415926f);
                 SVPWM(Position_Phase_Degree+90,duty);
             }
         }else{
-            FOC_STOP();
+            if(Board_Mode!=TEST)
+                FOC_STOP();
         }
         if(Wave_Flag)
             send_wave(Position_Degree,Position_Phase_Degree,Speed,iq);
@@ -286,7 +289,11 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 
 void Test_Direction(){
     uint16_t last_pos=Position;
+    Mode old_mode;
     int result=0;
+
+    old_mode = Board_Mode;
+    Board_Mode = TEST;
     for(int i=0;i<1000;++i){
         SVPWM(i%360,0.1);
         /*
@@ -306,6 +313,8 @@ void Test_Direction(){
     if(result<0){
         Motor.Encoder_Direction=!Motor.Encoder_Direction;
     }
+
+    Board_Mode = old_mode;
 }
 
 inline void Rotate_Phase(float start,float stop,float step){
@@ -321,6 +330,11 @@ void Detect_Encoder(){
     float sin_sum,cos_sum;
     float last_position=0;
     float m_sub = 0; // 机械角度转过了多少
+    Mode old_mode;
+
+    old_mode = Board_Mode;
+    Board_Mode = TEST;
+
     sin_sum=cos_sum=0;
     Motor.Position_Phase_Offset = 0;
     for(int i =0; i<1000;++i){
@@ -352,6 +366,8 @@ void Detect_Encoder(){
     Motor.Position_Phase_Offset=atan2f(sin_sum,cos_sum)*180/3.1415926f;
     uprintf_polling("the offset is %f \r\n",Motor.Position_Phase_Offset);
     uprintf_polling("the paris %f\r\n",120.0f*21/m_sub);
+
+    Board_Mode = old_mode;
 }
 
 

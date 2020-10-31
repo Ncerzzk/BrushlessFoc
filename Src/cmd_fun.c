@@ -18,7 +18,8 @@ Var_Edit_Struct Var_List[]={
   {"base_sp",&Base_Speed},
   {"sp_a",&Speed_Attitude},
   {"duty",&Base_Duty},
-  {"duty_amp",&Duty_Amp}
+  {"duty_amp",&Duty_Amp},
+  {"phi",&Phi}
 };
 
 #define  STR(x) #x

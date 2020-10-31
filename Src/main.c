@@ -117,8 +117,9 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
   debug_uart_init(&huart5,DMA,DMA);
-  As5047_Init(0,ENCODER_CSN_GPIO_Port,ENCODER_CSN_Pin);
+ 
   Read_Parameters(1);
+   As5047_Init(0,ENCODER_CSN_GPIO_Port,ENCODER_CSN_Pin);
   Foc_Init();
 
   //Song_Init(&htim7,5000,0.3f,voice,297973);

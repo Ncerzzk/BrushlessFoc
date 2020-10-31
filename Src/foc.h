@@ -17,6 +17,7 @@ typedef enum{
     IDLE=0x00,
     OPENLOOP,
     DUTY,
+    TEST,
     CURRENT,
     SPEED,
     POSITION
@@ -42,5 +43,7 @@ extern float Base_Duty;
 extern float Duty_Amp;
 
 extern uint8_t Wave_Flag;
+extern float Phi;
+
 
 #endif
