@@ -36,6 +36,7 @@
 #include "as5047.h"
 #include "foc.h"
 #include "parameter.h"
+#include "dac.h"
 //#include "sing.h"
 /* USER CODE END Includes */
 
@@ -103,28 +104,29 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_ADC2_Init();
-
-
-
-  MX_CAN1_Init();
+#ifdef DAC_AS_VREF
+  MX_DAC_Init();
+#endif
   MX_TIM1_Init();
   MX_TIM8_Init();
-  MX_USB_OTG_FS_PCD_Init();
   MX_UART5_Init();
 
-  MX_SPI1_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
   debug_uart_init(&huart5,DMA,DMA);
  
   Read_Parameters(1);
-   As5047_Init(0,ENCODER_CSN_GPIO_Port,ENCODER_CSN_Pin);
+
+  #ifdef ENCODER_SOFT_SPI
+  As5047_Init(0,ENCODER_CSN_GPIO_Port,ENCODER_CSN_Pin);
+  #else
+  MX_SPI3_Init();
+  As5047_Init(&hspi3,ENCODER_CSN_GPIO_Port,ENCODER_CSN_Pin); 
+  #endif
   Foc_Init();
 
   //Song_Init(&htim7,5000,0.3f,voice,297973);
-
-  Init_OK();
 
   uprintf_polling("hello,world2!\r\n");
 

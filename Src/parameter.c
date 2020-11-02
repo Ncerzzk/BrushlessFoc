@@ -29,12 +29,15 @@ void Print_Parameters(Flash_Parameters *p){
 }
 
 void Read_Parameters(uint8_t write_default){
+
+
     Flash_Parameters temp = *(Flash_Parameters *)PARAMETER_FLASH_ADDRESS;
     INIT:
     if(temp.motor_info.Pairs==0xFF){
         uprintf_polling("First time used, use default configuration!\r\n");
         if(write_default){
             Write_Parameter();
+            temp = *(Flash_Parameters *)PARAMETER_FLASH_ADDRESS; 
             goto INIT;
         }
     }

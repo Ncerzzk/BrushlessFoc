@@ -13,9 +13,9 @@ Uvect_Mos U7 = {1, 1, 1, 0};
 
 static void SVPWM_Step(CCR_Duty duty)
 {
-    SVPWM_TIM->CCR1 = duty.ccra * SVPWM_TIM->ARR;
-    SVPWM_TIM->CCR2 = duty.ccrb * SVPWM_TIM->ARR;
-    SVPWM_TIM->CCR3 = duty.ccrc * SVPWM_TIM->ARR;
+    SVPWM_TIM->CCRA = duty.ccra * SVPWM_TIM->ARR;
+    SVPWM_TIM->CCRB = duty.ccrb * SVPWM_TIM->ARR;
+    SVPWM_TIM->CCRC = duty.ccrc * SVPWM_TIM->ARR;
 }
 
 

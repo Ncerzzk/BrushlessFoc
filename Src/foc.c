@@ -111,7 +111,9 @@ void PID_I_Clear(){
 
 void Current_ADC_Init(int times){
     int32_t curr_sum[2]={0};
+    #ifdef DRV8302
     HAL_GPIO_WritePin(DC_CAL_GPIO_Port,DC_CAL_Pin,GPIO_PIN_SET);
+    #endif
     HAL_Delay(10);
     for(int i=0;i<times;++i){
         curr_sum[0]+=current_adc_value[0];
@@ -122,7 +124,9 @@ void Current_ADC_Init(int times){
     current_adc_offset[0]=curr_sum[0]/times;
     current_adc_offset[1]=curr_sum[1]/times;
 
+   #ifdef DRV8302
    HAL_GPIO_WritePin(DC_CAL_GPIO_Port,DC_CAL_Pin,GPIO_PIN_RESET); 
+   #endif
    uprintf_polling("the offset of curr_adc is %d,%d\r\n",current_adc_offset[0],current_adc_offset[1]);
 
 }
@@ -142,8 +146,9 @@ void Foc_Init(){
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
 
-  HAL_GPIO_WritePin(EN_GATE_GPIO_Port,EN_GATE_Pin,GPIO_PIN_SET);
-
+  #ifdef DRV8302
+    HAL_GPIO_WritePin(EN_GATE_GPIO_Port,EN_GATE_Pin,GPIO_PIN_SET);
+  #endif
   Current_ADC_Init(20);
 
   HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
@@ -211,28 +216,23 @@ void Current_Control(){
     SVPWM(target_theta,length/8.0f);  //8V = 12V *2/3;
 }
 
-#define ADC_TO_VOLTAGE(x)  ((current_adc_offset[x]-current_adc_value[x])/4096.0f*3.3f)
-#define GAIN    40.0f
-#define RES     0.003f
+
+#define GET_CURRENT(x)     (GET_SHUNT_VOLTAGE(current_adc_offset[x],current_adc_value[x])/SHUNT_RES)
 
 const int Speed_Control_CNT_MAX = FOC_FREQ/SPEED_FREQ;
 const int Position_Control_CNT_MAX = FOC_FREQ/POSITION_FREQ;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
     float temp_iq,temp_id;
+    float temp_current,temp_current1;
     static int current_control_cnt=0;
 
     if(hadc->Instance==CURRENT_ADC){
         Check_Mode();
         if(current_control_cnt%Position_Control_CNT_MAX==0){
-            //p = sin(7200°/s * t) = sin(40 *pi *t)
-            //float t = current_control_cnt* 1.0f/FOC_FREQ;
-            //Position_Degree_Set = arm_cos_f32(4*PI*t)*180+180;
-            //Position_Control();
-            if(Board_Mode == POSITION){
+           if(Board_Mode == POSITION){
                 Position_Control();
             }
-            //Speed_Set = Base_Speed + Speed_Attitude*arm_sin_f32(Position_Degree/180.0f*3.1415926f);
         }
         if(current_control_cnt%Speed_Control_CNT_MAX==0){
             if(Board_Mode >= SPEED){
@@ -244,19 +244,18 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
             current_control_cnt=0;
         }
         HAL_GPIO_WritePin(GPIOC,LED_GREEN_Pin,GPIO_PIN_SET);   
-        //current[0]=ADC_TO_VOLTAGE(0)/GAIN/RES;
-        //current[1]=ADC_TO_VOLTAGE(1)/GAIN/RES;
-        UTILS_LP_FAST(current[0],ADC_TO_VOLTAGE(0)/GAIN/RES,0.1);
-        UTILS_LP_FAST(current[1],ADC_TO_VOLTAGE(1)/GAIN/RES,0.1);
 
-        input_voltage = current_adc_value[2]/4096.0f*3.3f*(39+2.2f)/2.2f;
+        UTILS_LP_FAST(current[0],GET_CURRENT(0),0.1);
+        UTILS_LP_FAST(current[1],GET_CURRENT(1),0.1);
+
+        input_voltage = ADCVAL_TO_VOLTAGE(current_adc_value[2])*(VOLTAGE_RES1+VOLTAGE_RES2)/VOLTAGE_RES2;
 
         Clark_Conv(current[1],current[0],&ialpha,&ibeta);
     
         Position = Get_Position();
         Position_Degree = Position_to_Rad_Dgree(Position,1);
         Position_Phase_Degree = Position_Degree * Motor.Pairs-Motor.Position_Phase_Offset;
-        //;
+
         Park_Conv(ialpha,ibeta,Position_Phase_Degree,&temp_iq,&temp_id);
         UTILS_LP_FAST(iq,temp_iq,0.1);
         UTILS_LP_FAST(id,temp_id,0.1);

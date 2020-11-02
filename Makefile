@@ -50,6 +50,7 @@ Src/arm_cos_f32.c \
 Src/arm_common_tables.c \
 Src/foc.c \
 Src/cmd_fun.c \
+Src/dac.c \
 Src/adc.c \
 Src/can.c \
 Src/sys.c \
@@ -59,6 +60,7 @@ Src/usb_otg.c \
 Src/stm32f4xx_it.c \
 Src/stm32f4xx_hal_msp.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \

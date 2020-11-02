@@ -54,7 +54,7 @@ void MX_ADC1_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
   */
-  sConfig.Channel = ADC_CHANNEL_8;
+  sConfig.Channel = C_CURRENT_ADC_CHANNEL;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -63,14 +63,14 @@ void MX_ADC1_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
   */
-  sConfig.Channel = ADC_CHANNEL_9;
+  sConfig.Channel = A_CURRENT_ADC_CHANNEL;
   sConfig.Rank = 2;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
   }
 
-  sConfig.Channel = ADC_CHANNEL_12;
+  sConfig.Channel = VOLOTAGE_ADC_CHANNEL;
   sConfig.Rank = 3;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -142,12 +142,25 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     /* ADC1 clock enable */
     __HAL_RCC_ADC1_CLK_ENABLE();
   
-    __HAL_RCC_GPIOB_CLK_ENABLE();
+    //__HAL_RCC_GPIOB_CLK_ENABLE();
     /**ADC1 GPIO Configuration    
     PB0     ------> ADC1_IN8
     PB1     ------> ADC1_IN9 
     PC2
     */
+
+    GPIO_InitStruct.Pin = VOLOTAGE_ADC_GPIO_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(VOLTAGE_ADC_GPIO_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = C_CURRENT_ADC_GPIO_PIN;
+    HAL_GPIO_Init(C_CURRENT_ADC_GPIO_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = A_CURRENT_ADC_GPIO_PIN;
+    HAL_GPIO_Init(A_CURRENT_ADC_GPIO_PORT, &GPIO_InitStruct);
+
+/*
     GPIO_InitStruct.Pin = BR_SO2_Pin|BR_SO1_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -157,6 +170,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+*/
 
     /* ADC1 DMA Init */
     /* ADC1 Init */
