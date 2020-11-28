@@ -1,0 +1,1104 @@
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"command.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_d2f
+  18              		.section	.text.get_prams,"ax",%progbits
+  19              		.align	1
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	get_prams:
+  27              	.LVL0:
+  28              	.LFB133:
+  29              		.file 1 "mylib/command.c"
+   1:mylib/command.c **** #include <stdio.h>
+   2:mylib/command.c **** #include <stdlib.h>
+   3:mylib/command.c **** #include "command.h"
+   4:mylib/command.c **** #include "usart.h"
+   5:mylib/command.c **** #include "ctype.h"
+   6:mylib/command.c **** #include "uart_ext.h"
+   7:mylib/command.c **** 
+   8:mylib/command.c **** 
+   9:mylib/command.c **** struct {
+  10:mylib/command.c ****   char * array[CMD_MAX_NUM];
+  11:mylib/command.c ****   int array_ptr;
+  12:mylib/command.c ****   cmdFunc func_array[CMD_MAX_NUM];
+  13:mylib/command.c **** }CMD;
+  14:mylib/command.c **** 
+  15:mylib/command.c **** 
+  16:mylib/command.c **** 
+  17:mylib/command.c **** 
+  18:mylib/command.c **** #define STRING_PRAM_NUM 4
+  19:mylib/command.c **** #define FLOAT_PRAM_NUM  4
+  20:mylib/command.c **** 
+  21:mylib/command.c **** static int16_t get_prams(char *s,char *** string_prams,float ** float_prams){
+  30              		.loc 1 21 77 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		.loc 1 21 77 is_stmt 0 view .LVU1
+  35 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 32
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 2
+
+
+  38              		.cfi_offset 3, -32
+  39              		.cfi_offset 4, -28
+  40              		.cfi_offset 5, -24
+  41              		.cfi_offset 6, -20
+  42              		.cfi_offset 7, -16
+  43              		.cfi_offset 8, -12
+  44              		.cfi_offset 9, -8
+  45              		.cfi_offset 14, -4
+  46 0004 0746     		mov	r7, r0
+  47 0006 0E46     		mov	r6, r1
+  48 0008 9146     		mov	r9, r2
+  22:mylib/command.c ****   int i=0;
+  49              		.loc 1 22 3 is_stmt 1 view .LVU2
+  50              	.LVL1:
+  23:mylib/command.c ****   enum {IN_DIGITAL=1,IN_LETTER=2,IN_SPACE=0}in_flag;
+  51              		.loc 1 23 3 view .LVU3
+  24:mylib/command.c ****   char **float_buffer;
+  52              		.loc 1 24 3 view .LVU4
+  25:mylib/command.c ****   char **string_buffer;
+  53              		.loc 1 25 3 view .LVU5
+  26:mylib/command.c ****   
+  27:mylib/command.c ****   int num_float_i=0,num_string_i=0; //第几个数字
+  54              		.loc 1 27 3 view .LVU6
+  28:mylib/command.c ****   int num_i_i=0;//第几个数字/字符串的第几位
+  55              		.loc 1 28 3 view .LVU7
+  29:mylib/command.c ****   
+  30:mylib/command.c ****   in_flag=IN_SPACE;
+  56              		.loc 1 30 3 view .LVU8
+  31:mylib/command.c ****   
+  32:mylib/command.c ****   /*
+  33:mylib/command.c ****   数字参数的存放位置，这些空间需要在函数外释放
+  34:mylib/command.c ****   */
+  35:mylib/command.c ****   *float_prams=(float *)malloc(sizeof(int)*FLOAT_PRAM_NUM);
+  57              		.loc 1 35 3 view .LVU9
+  58              		.loc 1 35 25 is_stmt 0 view .LVU10
+  59 000a 1020     		movs	r0, #16
+  60              	.LVL2:
+  61              		.loc 1 35 25 view .LVU11
+  62 000c FFF7FEFF 		bl	malloc
+  63              	.LVL3:
+  64              		.loc 1 35 15 view .LVU12
+  65 0010 C9F80000 		str	r0, [r9]
+  36:mylib/command.c ****   
+  37:mylib/command.c ****   /*
+  38:mylib/command.c ****   数字参数的文本临时存放，用于调用atof函数
+  39:mylib/command.c ****   在本程序结束前会将这些空间释放掉
+  40:mylib/command.c ****   */
+  41:mylib/command.c ****   float_buffer=(char **)malloc(sizeof(char *)*FLOAT_PRAM_NUM);
+  66              		.loc 1 41 3 is_stmt 1 view .LVU13
+  67              		.loc 1 41 25 is_stmt 0 view .LVU14
+  68 0014 1020     		movs	r0, #16
+  69 0016 FFF7FEFF 		bl	malloc
+  70              	.LVL4:
+  71 001a 0446     		mov	r4, r0
+  72              	.LVL5:
+  42:mylib/command.c ****   for(i=0;i<FLOAT_PRAM_NUM;++i){
+  73              		.loc 1 42 3 is_stmt 1 view .LVU15
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 3
+
+
+  74              		.loc 1 42 8 is_stmt 0 view .LVU16
+  75 001c 0025     		movs	r5, #0
+  76              		.loc 1 42 3 view .LVU17
+  77 001e 05E0     		b	.L2
+  78              	.LVL6:
+  79              	.L3:
+  43:mylib/command.c ****     float_buffer[i]=(char *)malloc(sizeof(char)*20);
+  80              		.loc 1 43 5 is_stmt 1 discriminator 3 view .LVU18
+  81              		.loc 1 43 29 is_stmt 0 discriminator 3 view .LVU19
+  82 0020 1420     		movs	r0, #20
+  83 0022 FFF7FEFF 		bl	malloc
+  84              	.LVL7:
+  85              		.loc 1 43 20 discriminator 3 view .LVU20
+  86 0026 44F82500 		str	r0, [r4, r5, lsl #2]
+  42:mylib/command.c ****   for(i=0;i<FLOAT_PRAM_NUM;++i){
+  87              		.loc 1 42 28 is_stmt 1 discriminator 3 view .LVU21
+  88 002a 0135     		adds	r5, r5, #1
+  89              	.LVL8:
+  90              	.L2:
+  42:mylib/command.c ****   for(i=0;i<FLOAT_PRAM_NUM;++i){
+  91              		.loc 1 42 11 discriminator 1 view .LVU22
+  42:mylib/command.c ****   for(i=0;i<FLOAT_PRAM_NUM;++i){
+  92              		.loc 1 42 3 is_stmt 0 discriminator 1 view .LVU23
+  93 002c 032D     		cmp	r5, #3
+  94 002e F7DD     		ble	.L3
+  44:mylib/command.c ****   }
+  45:mylib/command.c ****   
+  46:mylib/command.c ****   /*
+  47:mylib/command.c ****   字符串参数的存放位置，这些空间需要在函数外释放
+  48:mylib/command.c ****   */
+  49:mylib/command.c ****   string_buffer=(char **)malloc(sizeof(char*) * STRING_PRAM_NUM);
+  95              		.loc 1 49 3 is_stmt 1 view .LVU24
+  96              		.loc 1 49 26 is_stmt 0 view .LVU25
+  97 0030 1020     		movs	r0, #16
+  98 0032 FFF7FEFF 		bl	malloc
+  99              	.LVL9:
+ 100 0036 8046     		mov	r8, r0
+ 101              	.LVL10:
+  50:mylib/command.c ****   for(i=0;i<STRING_PRAM_NUM;++i){
+ 102              		.loc 1 50 3 is_stmt 1 view .LVU26
+ 103              		.loc 1 50 8 is_stmt 0 view .LVU27
+ 104 0038 0025     		movs	r5, #0
+ 105              		.loc 1 50 3 view .LVU28
+ 106 003a 05E0     		b	.L4
+ 107              	.LVL11:
+ 108              	.L5:
+  51:mylib/command.c ****     string_buffer[i]=(char *)malloc(sizeof(char)*20);
+ 109              		.loc 1 51 5 is_stmt 1 discriminator 3 view .LVU29
+ 110              		.loc 1 51 30 is_stmt 0 discriminator 3 view .LVU30
+ 111 003c 1420     		movs	r0, #20
+ 112 003e FFF7FEFF 		bl	malloc
+ 113              	.LVL12:
+ 114              		.loc 1 51 21 discriminator 3 view .LVU31
+ 115 0042 48F82500 		str	r0, [r8, r5, lsl #2]
+  50:mylib/command.c ****   for(i=0;i<STRING_PRAM_NUM;++i){
+ 116              		.loc 1 50 29 is_stmt 1 discriminator 3 view .LVU32
+ 117 0046 0135     		adds	r5, r5, #1
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 4
+
+
+ 118              	.LVL13:
+ 119              	.L4:
+  50:mylib/command.c ****   for(i=0;i<STRING_PRAM_NUM;++i){
+ 120              		.loc 1 50 11 discriminator 1 view .LVU33
+  50:mylib/command.c ****   for(i=0;i<STRING_PRAM_NUM;++i){
+ 121              		.loc 1 50 3 is_stmt 0 discriminator 1 view .LVU34
+ 122 0048 032D     		cmp	r5, #3
+ 123 004a F7DD     		ble	.L5
+  52:mylib/command.c ****   }
+  53:mylib/command.c ****   
+  54:mylib/command.c ****   *string_prams=string_buffer;
+ 124              		.loc 1 54 3 is_stmt 1 view .LVU35
+ 125              		.loc 1 54 16 is_stmt 0 view .LVU36
+ 126 004c C6F80080 		str	r8, [r6]
+  55:mylib/command.c ****   
+  56:mylib/command.c ****   i=0;
+ 127              		.loc 1 56 3 is_stmt 1 view .LVU37
+ 128              	.LVL14:
+  57:mylib/command.c ****   //使用DMA，增加s[1]!='\r'的条件，因为没有再把\r换成\0了
+  58:mylib/command.c ****   while(s[i]!='\0'&&s[i]!='\r'&&num_float_i<=FLOAT_PRAM_NUM&&num_string_i<=STRING_PRAM_NUM&&num_i_i
+ 129              		.loc 1 58 3 view .LVU38
+  28:mylib/command.c ****   
+ 130              		.loc 1 28 7 is_stmt 0 view .LVU39
+ 131 0050 0021     		movs	r1, #0
+  27:mylib/command.c ****   int num_i_i=0;//第几个数字/字符串的第几位
+ 132              		.loc 1 27 21 view .LVU40
+ 133 0052 0E46     		mov	r6, r1
+ 134              	.LVL15:
+  27:mylib/command.c ****   int num_i_i=0;//第几个数字/字符串的第几位
+ 135              		.loc 1 27 7 view .LVU41
+ 136 0054 0D46     		mov	r5, r1
+  30:mylib/command.c ****   
+ 137              		.loc 1 30 10 view .LVU42
+ 138 0056 0846     		mov	r0, r1
+  56:mylib/command.c ****   //使用DMA，增加s[1]!='\r'的条件，因为没有再把\r换成\0了
+ 139              		.loc 1 56 4 view .LVU43
+ 140 0058 0A46     		mov	r2, r1
+ 141              		.loc 1 58 8 view .LVU44
+ 142 005a 12E0     		b	.L6
+ 143              	.LVL16:
+ 144              	.L9:
+  59:mylib/command.c ****     if(s[i]!=' '){//到达非空格
+  60:mylib/command.c ****       if(in_flag==IN_SPACE){  //在数字中标志位和字符串标志位未设置,即从空格之
+  61:mylib/command.c ****         if(isalpha(s[i])){
+  62:mylib/command.c ****           in_flag=IN_LETTER;
+  63:mylib/command.c ****           num_string_i++;
+  64:mylib/command.c ****           string_buffer[num_string_i-1][0]=s[i];  //复制第一个字符
+  65:mylib/command.c ****         }else{
+  66:mylib/command.c ****           in_flag=IN_DIGITAL;
+ 145              		.loc 1 66 11 is_stmt 1 view .LVU45
+  67:mylib/command.c ****           num_float_i++;
+ 146              		.loc 1 67 11 view .LVU46
+  68:mylib/command.c ****           float_buffer[num_float_i-1][0]=s[i];   //复制第一个数字字符
+ 147              		.loc 1 68 11 view .LVU47
+ 148              		.loc 1 68 23 is_stmt 0 view .LVU48
+ 149 005c 54F82510 		ldr	r1, [r4, r5, lsl #2]
+ 150              		.loc 1 68 41 view .LVU49
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 5
+
+
+ 151 0060 0B70     		strb	r3, [r1]
+  67:mylib/command.c ****           num_float_i++;
+ 152              		.loc 1 67 22 view .LVU50
+ 153 0062 0135     		adds	r5, r5, #1
+ 154              	.LVL17:
+  69:mylib/command.c ****         }
+  70:mylib/command.c ****         num_i_i=0;
+ 155              		.loc 1 70 16 view .LVU51
+ 156 0064 0021     		movs	r1, #0
+  66:mylib/command.c ****           num_float_i++;
+ 157              		.loc 1 66 18 view .LVU52
+ 158 0066 0120     		movs	r0, #1
+ 159 0068 09E0     		b	.L10
+ 160              	.LVL18:
+ 161              	.L8:
+  71:mylib/command.c ****       }else{
+  72:mylib/command.c ****         //继续复制
+  73:mylib/command.c ****         if(in_flag==IN_LETTER){
+ 162              		.loc 1 73 9 is_stmt 1 view .LVU53
+ 163              		.loc 1 73 11 is_stmt 0 view .LVU54
+ 164 006a 0228     		cmp	r0, #2
+ 165 006c 23D0     		beq	.L22
+  74:mylib/command.c ****           string_buffer[num_string_i-1][num_i_i]=s[i];
+  75:mylib/command.c ****         }else{
+  76:mylib/command.c ****           float_buffer[num_float_i-1][num_i_i]=s[i];
+ 166              		.loc 1 76 11 is_stmt 1 view .LVU55
+ 167              		.loc 1 76 23 is_stmt 0 view .LVU56
+ 168 006e 05F1804C 		add	ip, r5, #1073741824
+ 169 0072 0CF1FF3C 		add	ip, ip, #-1
+ 170 0076 54F82CC0 		ldr	ip, [r4, ip, lsl #2]
+ 171              		.loc 1 76 47 view .LVU57
+ 172 007a 0CF80130 		strb	r3, [ip, r1]
+ 173              	.LVL19:
+ 174              	.L10:
+  77:mylib/command.c ****         }
+  78:mylib/command.c ****       }
+  79:mylib/command.c ****       num_i_i++;
+ 175              		.loc 1 79 7 is_stmt 1 view .LVU58
+ 176              		.loc 1 79 14 is_stmt 0 view .LVU59
+ 177 007e 0131     		adds	r1, r1, #1
+ 178              	.LVL20:
+ 179              	.L12:
+  80:mylib/command.c ****     }else{ //是空格
+  81:mylib/command.c ****       if(in_flag==IN_LETTER){
+  82:mylib/command.c ****         string_buffer[num_string_i-1][num_i_i]='\0';
+  83:mylib/command.c ****       }else if(in_flag==IN_DIGITAL){
+  84:mylib/command.c ****         float_buffer[num_float_i-1][num_i_i]='\0';
+  85:mylib/command.c ****       }
+  86:mylib/command.c ****       in_flag=IN_SPACE;
+  87:mylib/command.c ****     }
+  88:mylib/command.c ****     i++;
+ 180              		.loc 1 88 5 is_stmt 1 view .LVU60
+ 181              		.loc 1 88 6 is_stmt 0 view .LVU61
+ 182 0080 0132     		adds	r2, r2, #1
+ 183              	.LVL21:
+ 184              	.L6:
+  58:mylib/command.c ****     if(s[i]!=' '){//到达非空格
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 6
+
+
+ 185              		.loc 1 58 8 is_stmt 1 view .LVU62
+  58:mylib/command.c ****     if(s[i]!=' '){//到达非空格
+ 186              		.loc 1 58 10 is_stmt 0 view .LVU63
+ 187 0082 BB5C     		ldrb	r3, [r7, r2]	@ zero_extendqisi2
+  58:mylib/command.c ****     if(s[i]!=' '){//到达非空格
+ 188              		.loc 1 58 8 view .LVU64
+ 189 0084 B3B3     		cbz	r3, .L14
+  58:mylib/command.c ****     if(s[i]!=' '){//到达非空格
+ 190              		.loc 1 58 19 discriminator 1 view .LVU65
+ 191 0086 0D2B     		cmp	r3, #13
+ 192 0088 34D0     		beq	.L14
+  58:mylib/command.c ****     if(s[i]!=' '){//到达非空格
+ 193              		.loc 1 58 31 discriminator 2 view .LVU66
+ 194 008a 042D     		cmp	r5, #4
+ 195 008c 32DC     		bgt	.L14
+  58:mylib/command.c ****     if(s[i]!=' '){//到达非空格
+ 196              		.loc 1 58 60 discriminator 3 view .LVU67
+ 197 008e 042E     		cmp	r6, #4
+ 198 0090 30DC     		bgt	.L14
+  58:mylib/command.c ****     if(s[i]!=' '){//到达非空格
+ 199              		.loc 1 58 91 discriminator 4 view .LVU68
+ 200 0092 1329     		cmp	r1, #19
+ 201 0094 2EDC     		bgt	.L14
+  59:mylib/command.c ****       if(in_flag==IN_SPACE){  //在数字中标志位和字符串标志位未设置,即从空格之
+ 202              		.loc 1 59 5 is_stmt 1 view .LVU69
+  59:mylib/command.c ****       if(in_flag==IN_SPACE){  //在数字中标志位和字符串标志位未设置,即从空格之
+ 203              		.loc 1 59 7 is_stmt 0 view .LVU70
+ 204 0096 202B     		cmp	r3, #32
+ 205 0098 16D0     		beq	.L7
+  60:mylib/command.c ****         if(isalpha(s[i])){
+ 206              		.loc 1 60 7 is_stmt 1 view .LVU71
+  60:mylib/command.c ****         if(isalpha(s[i])){
+ 207              		.loc 1 60 9 is_stmt 0 view .LVU72
+ 208 009a 0028     		cmp	r0, #0
+ 209 009c E5D1     		bne	.L8
+  61:mylib/command.c ****           in_flag=IN_LETTER;
+ 210              		.loc 1 61 9 is_stmt 1 view .LVU73
+  61:mylib/command.c ****           in_flag=IN_LETTER;
+ 211              		.loc 1 61 12 is_stmt 0 view .LVU74
+ 212 009e 2F49     		ldr	r1, .L27
+ 213              	.LVL22:
+  61:mylib/command.c ****           in_flag=IN_LETTER;
+ 214              		.loc 1 61 12 view .LVU75
+ 215 00a0 595C     		ldrb	r1, [r3, r1]	@ zero_extendqisi2
+  61:mylib/command.c ****           in_flag=IN_LETTER;
+ 216              		.loc 1 61 11 view .LVU76
+ 217 00a2 11F0030F 		tst	r1, #3
+ 218 00a6 D9D0     		beq	.L9
+  62:mylib/command.c ****           num_string_i++;
+ 219              		.loc 1 62 11 is_stmt 1 view .LVU77
+ 220              	.LVL23:
+  63:mylib/command.c ****           string_buffer[num_string_i-1][0]=s[i];  //复制第一个字符
+ 221              		.loc 1 63 11 view .LVU78
+  64:mylib/command.c ****         }else{
+ 222              		.loc 1 64 11 view .LVU79
+  64:mylib/command.c ****         }else{
+ 223              		.loc 1 64 24 is_stmt 0 view .LVU80
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 7
+
+
+ 224 00a8 58F82610 		ldr	r1, [r8, r6, lsl #2]
+  64:mylib/command.c ****         }else{
+ 225              		.loc 1 64 43 view .LVU81
+ 226 00ac 0B70     		strb	r3, [r1]
+  63:mylib/command.c ****           string_buffer[num_string_i-1][0]=s[i];  //复制第一个字符
+ 227              		.loc 1 63 23 view .LVU82
+ 228 00ae 0136     		adds	r6, r6, #1
+ 229              	.LVL24:
+  70:mylib/command.c ****       }else{
+ 230              		.loc 1 70 16 view .LVU83
+ 231 00b0 0021     		movs	r1, #0
+  62:mylib/command.c ****           num_string_i++;
+ 232              		.loc 1 62 18 view .LVU84
+ 233 00b2 0220     		movs	r0, #2
+ 234 00b4 E3E7     		b	.L10
+ 235              	.LVL25:
+ 236              	.L22:
+  74:mylib/command.c ****         }else{
+ 237              		.loc 1 74 11 is_stmt 1 view .LVU85
+  74:mylib/command.c ****         }else{
+ 238              		.loc 1 74 24 is_stmt 0 view .LVU86
+ 239 00b6 06F1804C 		add	ip, r6, #1073741824
+ 240 00ba 0CF1FF3C 		add	ip, ip, #-1
+ 241 00be 58F82CC0 		ldr	ip, [r8, ip, lsl #2]
+  74:mylib/command.c ****         }else{
+ 242              		.loc 1 74 49 view .LVU87
+ 243 00c2 0CF80130 		strb	r3, [ip, r1]
+ 244 00c6 DAE7     		b	.L10
+ 245              	.L7:
+  81:mylib/command.c ****         string_buffer[num_string_i-1][num_i_i]='\0';
+ 246              		.loc 1 81 7 is_stmt 1 view .LVU88
+  81:mylib/command.c ****         string_buffer[num_string_i-1][num_i_i]='\0';
+ 247              		.loc 1 81 9 is_stmt 0 view .LVU89
+ 248 00c8 0228     		cmp	r0, #2
+ 249 00ca 03D0     		beq	.L23
+  83:mylib/command.c ****         float_buffer[num_float_i-1][num_i_i]='\0';
+ 250              		.loc 1 83 13 is_stmt 1 view .LVU90
+  83:mylib/command.c ****         float_buffer[num_float_i-1][num_i_i]='\0';
+ 251              		.loc 1 83 15 is_stmt 0 view .LVU91
+ 252 00cc 0128     		cmp	r0, #1
+ 253 00ce 09D0     		beq	.L24
+  86:mylib/command.c ****     }
+ 254              		.loc 1 86 14 view .LVU92
+ 255 00d0 0020     		movs	r0, #0
+ 256              	.LVL26:
+  86:mylib/command.c ****     }
+ 257              		.loc 1 86 14 view .LVU93
+ 258 00d2 D5E7     		b	.L12
+ 259              	.LVL27:
+ 260              	.L23:
+  82:mylib/command.c ****       }else if(in_flag==IN_DIGITAL){
+ 261              		.loc 1 82 9 is_stmt 1 view .LVU94
+  82:mylib/command.c ****       }else if(in_flag==IN_DIGITAL){
+ 262              		.loc 1 82 22 is_stmt 0 view .LVU95
+ 263 00d4 06F18043 		add	r3, r6, #1073741824
+ 264 00d8 013B     		subs	r3, r3, #1
+ 265 00da 58F82330 		ldr	r3, [r8, r3, lsl #2]
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 8
+
+
+  82:mylib/command.c ****       }else if(in_flag==IN_DIGITAL){
+ 266              		.loc 1 82 47 view .LVU96
+ 267 00de 0020     		movs	r0, #0
+ 268              	.LVL28:
+  82:mylib/command.c ****       }else if(in_flag==IN_DIGITAL){
+ 269              		.loc 1 82 47 view .LVU97
+ 270 00e0 5854     		strb	r0, [r3, r1]
+ 271 00e2 CDE7     		b	.L12
+ 272              	.LVL29:
+ 273              	.L24:
+  84:mylib/command.c ****       }
+ 274              		.loc 1 84 9 is_stmt 1 view .LVU98
+  84:mylib/command.c ****       }
+ 275              		.loc 1 84 21 is_stmt 0 view .LVU99
+ 276 00e4 05F18043 		add	r3, r5, #1073741824
+ 277 00e8 013B     		subs	r3, r3, #1
+ 278 00ea 54F82330 		ldr	r3, [r4, r3, lsl #2]
+  84:mylib/command.c ****       }
+ 279              		.loc 1 84 45 view .LVU100
+ 280 00ee 0020     		movs	r0, #0
+ 281              	.LVL30:
+  84:mylib/command.c ****       }
+ 282              		.loc 1 84 45 view .LVU101
+ 283 00f0 5854     		strb	r0, [r3, r1]
+ 284 00f2 C5E7     		b	.L12
+ 285              	.LVL31:
+ 286              	.L14:
+  89:mylib/command.c ****   }
+  90:mylib/command.c ****   if(in_flag==IN_LETTER){  //如果是字符串参数放在最后，这里必须再检查一下，�
+ 287              		.loc 1 90 3 is_stmt 1 view .LVU102
+ 288              		.loc 1 90 5 is_stmt 0 view .LVU103
+ 289 00f4 0228     		cmp	r0, #2
+ 290 00f6 03D0     		beq	.L25
+  91:mylib/command.c ****     string_buffer[num_string_i-1][num_i_i]='\0';
+  92:mylib/command.c ****   }else if(in_flag==IN_DIGITAL){
+ 291              		.loc 1 92 9 is_stmt 1 view .LVU104
+ 292              		.loc 1 92 11 is_stmt 0 view .LVU105
+ 293 00f8 0128     		cmp	r0, #1
+ 294 00fa 09D0     		beq	.L26
+ 295              	.LVL32:
+ 296              	.L17:
+  56:mylib/command.c ****   //使用DMA，增加s[1]!='\r'的条件，因为没有再把\r换成\0了
+ 297              		.loc 1 56 4 discriminator 1 view .LVU106
+ 298 00fc 0027     		movs	r7, #0
+ 299              	.LVL33:
+  56:mylib/command.c ****   //使用DMA，增加s[1]!='\r'的条件，因为没有再把\r换成\0了
+ 300              		.loc 1 56 4 discriminator 1 view .LVU107
+ 301 00fe 23E0     		b	.L18
+ 302              	.LVL34:
+ 303              	.L25:
+  91:mylib/command.c ****     string_buffer[num_string_i-1][num_i_i]='\0';
+ 304              		.loc 1 91 5 is_stmt 1 view .LVU108
+  91:mylib/command.c ****     string_buffer[num_string_i-1][num_i_i]='\0';
+ 305              		.loc 1 91 18 is_stmt 0 view .LVU109
+ 306 0100 06F18043 		add	r3, r6, #1073741824
+ 307 0104 013B     		subs	r3, r3, #1
+ 308 0106 58F82330 		ldr	r3, [r8, r3, lsl #2]
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 9
+
+
+  91:mylib/command.c ****     string_buffer[num_string_i-1][num_i_i]='\0';
+ 309              		.loc 1 91 43 view .LVU110
+ 310 010a 0022     		movs	r2, #0
+ 311              	.LVL35:
+  91:mylib/command.c ****     string_buffer[num_string_i-1][num_i_i]='\0';
+ 312              		.loc 1 91 43 view .LVU111
+ 313 010c 5A54     		strb	r2, [r3, r1]
+ 314 010e F5E7     		b	.L17
+ 315              	.LVL36:
+ 316              	.L26:
+  93:mylib/command.c ****     float_buffer[num_float_i-1][num_i_i]='\0';
+ 317              		.loc 1 93 5 is_stmt 1 view .LVU112
+ 318              		.loc 1 93 17 is_stmt 0 view .LVU113
+ 319 0110 05F18043 		add	r3, r5, #1073741824
+ 320 0114 013B     		subs	r3, r3, #1
+ 321 0116 54F82330 		ldr	r3, [r4, r3, lsl #2]
+ 322              		.loc 1 93 41 view .LVU114
+ 323 011a 0022     		movs	r2, #0
+ 324              	.LVL37:
+ 325              		.loc 1 93 41 view .LVU115
+ 326 011c 5A54     		strb	r2, [r3, r1]
+ 327 011e EDE7     		b	.L17
+ 328              	.LVL38:
+ 329              	.L19:
+  94:mylib/command.c ****   }
+  95:mylib/command.c ****   
+  96:mylib/command.c ****   /*
+  97:mylib/command.c ****   释放数字参数的字符临时存放空间
+  98:mylib/command.c ****   */
+  99:mylib/command.c ****   for(i=0;i<FLOAT_PRAM_NUM;++i){
+ 100:mylib/command.c ****     (*float_prams)[i]=atof(float_buffer[i]);
+ 330              		.loc 1 100 5 is_stmt 1 discriminator 3 view .LVU116
+ 331              		.loc 1 100 40 is_stmt 0 discriminator 3 view .LVU117
+ 332 0120 4FEA8708 		lsl	r8, r7, #2
+ 333              		.loc 1 100 23 discriminator 3 view .LVU118
+ 334 0124 54F82700 		ldr	r0, [r4, r7, lsl #2]
+ 335 0128 FFF7FEFF 		bl	atof
+ 336              	.LVL39:
+ 337 012c 51EC100B 		vmov	r0, r1, d0
+ 338              		.loc 1 100 6 discriminator 3 view .LVU119
+ 339 0130 D9F80030 		ldr	r3, [r9]
+ 340              		.loc 1 100 19 discriminator 3 view .LVU120
+ 341 0134 9844     		add	r8, r8, r3
+ 342              		.loc 1 100 23 discriminator 3 view .LVU121
+ 343 0136 FFF7FEFF 		bl	__aeabi_d2f
+ 344              	.LVL40:
+ 345              		.loc 1 100 22 discriminator 3 view .LVU122
+ 346 013a C8F80000 		str	r0, [r8]	@ float
+ 101:mylib/command.c ****     free(float_buffer[i]);
+ 347              		.loc 1 101 5 is_stmt 1 discriminator 3 view .LVU123
+ 348 013e 54F82700 		ldr	r0, [r4, r7, lsl #2]
+ 349 0142 FFF7FEFF 		bl	free
+ 350              	.LVL41:
+  99:mylib/command.c ****     (*float_prams)[i]=atof(float_buffer[i]);
+ 351              		.loc 1 99 28 discriminator 3 view .LVU124
+ 352 0146 0137     		adds	r7, r7, #1
+ 353              	.LVL42:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 10
+
+
+ 354              	.L18:
+  99:mylib/command.c ****     (*float_prams)[i]=atof(float_buffer[i]);
+ 355              		.loc 1 99 11 discriminator 1 view .LVU125
+  99:mylib/command.c ****     (*float_prams)[i]=atof(float_buffer[i]);
+ 356              		.loc 1 99 3 is_stmt 0 discriminator 1 view .LVU126
+ 357 0148 032F     		cmp	r7, #3
+ 358 014a E9DD     		ble	.L19
+ 102:mylib/command.c ****   }
+ 103:mylib/command.c ****   free(float_buffer);
+ 359              		.loc 1 103 3 is_stmt 1 view .LVU127
+ 360 014c 2046     		mov	r0, r4
+ 361 014e FFF7FEFF 		bl	free
+ 362              	.LVL43:
+ 104:mylib/command.c ****   
+ 105:mylib/command.c ****   return num_string_i<<8|num_float_i;  
+ 363              		.loc 1 105 3 view .LVU128
+ 364              		.loc 1 105 25 is_stmt 0 view .LVU129
+ 365 0152 45EA0620 		orr	r0, r5, r6, lsl #8
+ 106:mylib/command.c **** }
+ 366              		.loc 1 106 1 view .LVU130
+ 367 0156 00B2     		sxth	r0, r0
+ 368 0158 BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 369              	.LVL44:
+ 370              	.L28:
+ 371              		.loc 1 106 1 view .LVU131
+ 372              		.align	2
+ 373              	.L27:
+ 374 015c 01000000 		.word	_ctype_+1
+ 375              		.cfi_endproc
+ 376              	.LFE133:
+ 378              		.section	.text.add_cmd,"ax",%progbits
+ 379              		.align	1
+ 380              		.global	add_cmd
+ 381              		.syntax unified
+ 382              		.thumb
+ 383              		.thumb_func
+ 384              		.fpu fpv4-sp-d16
+ 386              	add_cmd:
+ 387              	.LVL45:
+ 388              	.LFB134:
+ 107:mylib/command.c **** 
+ 108:mylib/command.c **** 
+ 109:mylib/command.c **** /*
+ 110:mylib/command.c **** void add_cmd(const char * s,cmdFunc f)
+ 111:mylib/command.c **** 新增命令，s为命令字符串，f为绑定的函数。
+ 112:mylib/command.c **** */
+ 113:mylib/command.c **** 
+ 114:mylib/command.c **** 
+ 115:mylib/command.c **** void add_cmd(char * s,cmdFunc f){
+ 389              		.loc 1 115 33 is_stmt 1 view -0
+ 390              		.cfi_startproc
+ 391              		@ args = 0, pretend = 0, frame = 0
+ 392              		@ frame_needed = 0, uses_anonymous_args = 0
+ 393              		@ link register save eliminated.
+ 116:mylib/command.c ****   if(CMD.array_ptr>CMD_MAX_NUM-1)
+ 394              		.loc 1 116 3 view .LVU133
+ 395              		.loc 1 116 9 is_stmt 0 view .LVU134
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 11
+
+
+ 396 0000 084B     		ldr	r3, .L31
+ 397 0002 D3F8C830 		ldr	r3, [r3, #200]
+ 398              		.loc 1 116 5 view .LVU135
+ 399 0006 312B     		cmp	r3, #49
+ 400 0008 0ADC     		bgt	.L29
+ 117:mylib/command.c ****     return ;
+ 118:mylib/command.c ****   CMD.array[CMD.array_ptr]=s;
+ 401              		.loc 1 118 3 is_stmt 1 view .LVU136
+ 402              		.loc 1 118 27 is_stmt 0 view .LVU137
+ 403 000a 064A     		ldr	r2, .L31
+ 404 000c 42F82300 		str	r0, [r2, r3, lsl #2]
+ 119:mylib/command.c ****   CMD.func_array[CMD.array_ptr]=f;
+ 405              		.loc 1 119 3 is_stmt 1 view .LVU138
+ 406              		.loc 1 119 32 is_stmt 0 view .LVU139
+ 407 0010 03F13200 		add	r0, r3, #50
+ 408              	.LVL46:
+ 409              		.loc 1 119 32 view .LVU140
+ 410 0014 02EB8000 		add	r0, r2, r0, lsl #2
+ 411 0018 4160     		str	r1, [r0, #4]
+ 120:mylib/command.c ****   CMD.array_ptr++;
+ 412              		.loc 1 120 3 is_stmt 1 view .LVU141
+ 413              		.loc 1 120 16 is_stmt 0 view .LVU142
+ 414 001a 0133     		adds	r3, r3, #1
+ 415              	.LVL47:
+ 416              		.loc 1 120 16 view .LVU143
+ 417 001c C2F8C830 		str	r3, [r2, #200]
+ 418              	.LVL48:
+ 419              	.L29:
+ 121:mylib/command.c **** }
+ 420              		.loc 1 121 1 view .LVU144
+ 421 0020 7047     		bx	lr
+ 422              	.L32:
+ 423 0022 00BF     		.align	2
+ 424              	.L31:
+ 425 0024 00000000 		.word	CMD
+ 426              		.cfi_endproc
+ 427              	.LFE134:
+ 429              		.section	.text.compare_cmd,"ax",%progbits
+ 430              		.align	1
+ 431              		.global	compare_cmd
+ 432              		.syntax unified
+ 433              		.thumb
+ 434              		.thumb_func
+ 435              		.fpu fpv4-sp-d16
+ 437              	compare_cmd:
+ 438              	.LVL49:
+ 439              	.LFB135:
+ 122:mylib/command.c **** 
+ 123:mylib/command.c **** /*
+ 124:mylib/command.c **** compare_cmd(const char* cmd,char *s)
+ 125:mylib/command.c **** 比较cmd与s两个字符串，其中cmd为命令，s为待比较的字符串
+ 126:mylib/command.c **** 若字符串为该命令，则返回命令的长度，否则返回0
+ 127:mylib/command.c **** */
+ 128:mylib/command.c **** char compare_cmd(const char * cmd,char * s){
+ 440              		.loc 1 128 44 is_stmt 1 view -0
+ 441              		.cfi_startproc
+ 442              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 12
+
+
+ 443              		@ frame_needed = 0, uses_anonymous_args = 0
+ 444              		@ link register save eliminated.
+ 445              		.loc 1 128 44 is_stmt 0 view .LVU146
+ 446 0000 30B4     		push	{r4, r5}
+ 447              	.LCFI1:
+ 448              		.cfi_def_cfa_offset 8
+ 449              		.cfi_offset 4, -8
+ 450              		.cfi_offset 5, -4
+ 129:mylib/command.c ****   int i=0;
+ 451              		.loc 1 129 3 is_stmt 1 view .LVU147
+ 452              	.LVL50:
+ 130:mylib/command.c ****   while(cmd[i]!='\0'&&s[i]!='\0'){
+ 453              		.loc 1 130 3 view .LVU148
+ 129:mylib/command.c ****   int i=0;
+ 454              		.loc 1 129 7 is_stmt 0 view .LVU149
+ 455 0002 0023     		movs	r3, #0
+ 456              		.loc 1 130 8 view .LVU150
+ 457 0004 00E0     		b	.L34
+ 458              	.LVL51:
+ 459              	.L42:
+ 131:mylib/command.c ****     if(cmd[i]!=s[i])
+ 132:mylib/command.c ****       return 0;
+ 133:mylib/command.c ****     ++i;
+ 460              		.loc 1 133 5 is_stmt 1 view .LVU151
+ 461 0006 0133     		adds	r3, r3, #1
+ 462              	.LVL52:
+ 463              	.L34:
+ 130:mylib/command.c ****   while(cmd[i]!='\0'&&s[i]!='\0'){
+ 464              		.loc 1 130 8 view .LVU152
+ 130:mylib/command.c ****   while(cmd[i]!='\0'&&s[i]!='\0'){
+ 465              		.loc 1 130 12 is_stmt 0 view .LVU153
+ 466 0008 1D46     		mov	r5, r3
+ 467 000a C25C     		ldrb	r2, [r0, r3]	@ zero_extendqisi2
+ 130:mylib/command.c ****   while(cmd[i]!='\0'&&s[i]!='\0'){
+ 468              		.loc 1 130 8 view .LVU154
+ 469 000c 2AB1     		cbz	r2, .L36
+ 130:mylib/command.c ****   while(cmd[i]!='\0'&&s[i]!='\0'){
+ 470              		.loc 1 130 24 discriminator 1 view .LVU155
+ 471 000e CC5C     		ldrb	r4, [r1, r3]	@ zero_extendqisi2
+ 130:mylib/command.c ****   while(cmd[i]!='\0'&&s[i]!='\0'){
+ 472              		.loc 1 130 21 discriminator 1 view .LVU156
+ 473 0010 1CB1     		cbz	r4, .L36
+ 131:mylib/command.c ****     if(cmd[i]!=s[i])
+ 474              		.loc 1 131 5 is_stmt 1 view .LVU157
+ 131:mylib/command.c ****     if(cmd[i]!=s[i])
+ 475              		.loc 1 131 7 is_stmt 0 view .LVU158
+ 476 0012 A242     		cmp	r2, r4
+ 477 0014 F7D0     		beq	.L42
+ 132:mylib/command.c ****     ++i;
+ 478              		.loc 1 132 14 view .LVU159
+ 479 0016 0020     		movs	r0, #0
+ 480              	.LVL53:
+ 132:mylib/command.c ****     ++i;
+ 481              		.loc 1 132 14 view .LVU160
+ 482 0018 06E0     		b	.L35
+ 483              	.LVL54:
+ 484              	.L36:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 13
+
+
+ 134:mylib/command.c ****   }
+ 135:mylib/command.c ****   if(s[i]!=' '&&s[i]!='\0'&&s[i]!='\r'){          //使用DMA必须判断最后一个i套件
+ 485              		.loc 1 135 3 is_stmt 1 view .LVU161
+ 486              		.loc 1 135 7 is_stmt 0 view .LVU162
+ 487 001a 4A5D     		ldrb	r2, [r1, r5]	@ zero_extendqisi2
+ 488              		.loc 1 135 5 view .LVU163
+ 489 001c 202A     		cmp	r2, #32
+ 490 001e 02D0     		beq	.L38
+ 491              		.loc 1 135 15 discriminator 1 view .LVU164
+ 492 0020 0AB1     		cbz	r2, .L38
+ 493              		.loc 1 135 27 discriminator 2 view .LVU165
+ 494 0022 0D2A     		cmp	r2, #13
+ 495 0024 02D1     		bne	.L40
+ 496              	.L38:
+ 136:mylib/command.c ****     return 0;   //比如命令hello 与命令 helloworld的情况，没有这个判断，会吧后�
+ 137:mylib/command.c ****   }
+ 138:mylib/command.c ****   return i;
+ 497              		.loc 1 138 3 is_stmt 1 view .LVU166
+ 498              		.loc 1 138 10 is_stmt 0 view .LVU167
+ 499 0026 D8B2     		uxtb	r0, r3
+ 500              	.LVL55:
+ 501              	.L35:
+ 139:mylib/command.c **** }
+ 502              		.loc 1 139 1 view .LVU168
+ 503 0028 30BC     		pop	{r4, r5}
+ 504              	.LCFI2:
+ 505              		.cfi_remember_state
+ 506              		.cfi_restore 5
+ 507              		.cfi_restore 4
+ 508              		.cfi_def_cfa_offset 0
+ 509 002a 7047     		bx	lr
+ 510              	.LVL56:
+ 511              	.L40:
+ 512              	.LCFI3:
+ 513              		.cfi_restore_state
+ 136:mylib/command.c ****     return 0;   //比如命令hello 与命令 helloworld的情况，没有这个判断，会吧后�
+ 514              		.loc 1 136 12 view .LVU169
+ 515 002c 0020     		movs	r0, #0
+ 516              	.LVL57:
+ 136:mylib/command.c ****     return 0;   //比如命令hello 与命令 helloworld的情况，没有这个判断，会吧后�
+ 517              		.loc 1 136 12 view .LVU170
+ 518 002e FBE7     		b	.L35
+ 519              		.cfi_endproc
+ 520              	.LFE135:
+ 522              		.section	.text.compare_string,"ax",%progbits
+ 523              		.align	1
+ 524              		.global	compare_string
+ 525              		.syntax unified
+ 526              		.thumb
+ 527              		.thumb_func
+ 528              		.fpu fpv4-sp-d16
+ 530              	compare_string:
+ 531              	.LVL58:
+ 532              	.LFB136:
+ 140:mylib/command.c **** 
+ 141:mylib/command.c **** uint8_t compare_string(const char *s1,char * s2){
+ 533              		.loc 1 141 49 is_stmt 1 view -0
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 14
+
+
+ 534              		.cfi_startproc
+ 535              		@ args = 0, pretend = 0, frame = 0
+ 536              		@ frame_needed = 0, uses_anonymous_args = 0
+ 537              		@ link register save eliminated.
+ 538              		.loc 1 141 49 is_stmt 0 view .LVU172
+ 539 0000 10B4     		push	{r4}
+ 540              	.LCFI4:
+ 541              		.cfi_def_cfa_offset 4
+ 542              		.cfi_offset 4, -4
+ 142:mylib/command.c ****   int i=0;
+ 543              		.loc 1 142 3 is_stmt 1 view .LVU173
+ 544              	.LVL59:
+ 143:mylib/command.c ****   while(s1[i]==s2[i]&&s1[i]&&s2[i]){
+ 545              		.loc 1 143 3 view .LVU174
+ 142:mylib/command.c ****   int i=0;
+ 546              		.loc 1 142 7 is_stmt 0 view .LVU175
+ 547 0002 0023     		movs	r3, #0
+ 548              		.loc 1 143 8 view .LVU176
+ 549 0004 00E0     		b	.L44
+ 550              	.LVL60:
+ 551              	.L46:
+ 144:mylib/command.c ****     i++;
+ 552              		.loc 1 144 5 is_stmt 1 view .LVU177
+ 553              		.loc 1 144 6 is_stmt 0 view .LVU178
+ 554 0006 0133     		adds	r3, r3, #1
+ 555              	.LVL61:
+ 556              	.L44:
+ 143:mylib/command.c ****   while(s1[i]==s2[i]&&s1[i]&&s2[i]){
+ 557              		.loc 1 143 8 is_stmt 1 view .LVU179
+ 143:mylib/command.c ****   while(s1[i]==s2[i]&&s1[i]&&s2[i]){
+ 558              		.loc 1 143 11 is_stmt 0 view .LVU180
+ 559 0008 C25C     		ldrb	r2, [r0, r3]	@ zero_extendqisi2
+ 143:mylib/command.c ****   while(s1[i]==s2[i]&&s1[i]&&s2[i]){
+ 560              		.loc 1 143 14 view .LVU181
+ 561 000a CC5C     		ldrb	r4, [r1, r3]	@ zero_extendqisi2
+ 143:mylib/command.c ****   while(s1[i]==s2[i]&&s1[i]&&s2[i]){
+ 562              		.loc 1 143 8 view .LVU182
+ 563 000c A242     		cmp	r2, r4
+ 564 000e 02D1     		bne	.L45
+ 143:mylib/command.c ****   while(s1[i]==s2[i]&&s1[i]&&s2[i]){
+ 565              		.loc 1 143 21 discriminator 1 view .LVU183
+ 566 0010 0AB1     		cbz	r2, .L45
+ 143:mylib/command.c ****   while(s1[i]==s2[i]&&s1[i]&&s2[i]){
+ 567              		.loc 1 143 28 discriminator 2 view .LVU184
+ 568 0012 002C     		cmp	r4, #0
+ 569 0014 F7D1     		bne	.L46
+ 570              	.L45:
+ 145:mylib/command.c ****   }
+ 146:mylib/command.c ****   if(!s1[i]&&!s2[i]){
+ 571              		.loc 1 146 3 is_stmt 1 view .LVU185
+ 572              		.loc 1 146 5 is_stmt 0 view .LVU186
+ 573 0016 12B9     		cbnz	r2, .L48
+ 574              		.loc 1 146 12 discriminator 1 view .LVU187
+ 575 0018 2CB1     		cbz	r4, .L49
+ 147:mylib/command.c ****     return 1;
+ 148:mylib/command.c ****   }else{
+ 149:mylib/command.c ****     return 0;
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 15
+
+
+ 576              		.loc 1 149 12 view .LVU188
+ 577 001a 0020     		movs	r0, #0
+ 578              	.LVL62:
+ 579              		.loc 1 149 12 view .LVU189
+ 580 001c 00E0     		b	.L47
+ 581              	.LVL63:
+ 582              	.L48:
+ 583              		.loc 1 149 12 view .LVU190
+ 584 001e 0020     		movs	r0, #0
+ 585              	.LVL64:
+ 586              	.L47:
+ 150:mylib/command.c ****   }  
+ 151:mylib/command.c **** }
+ 587              		.loc 1 151 1 view .LVU191
+ 588 0020 5DF8044B 		ldr	r4, [sp], #4
+ 589              	.LCFI5:
+ 590              		.cfi_remember_state
+ 591              		.cfi_restore 4
+ 592              		.cfi_def_cfa_offset 0
+ 593 0024 7047     		bx	lr
+ 594              	.LVL65:
+ 595              	.L49:
+ 596              	.LCFI6:
+ 597              		.cfi_restore_state
+ 147:mylib/command.c ****     return 1;
+ 598              		.loc 1 147 12 view .LVU192
+ 599 0026 0120     		movs	r0, #1
+ 600              	.LVL66:
+ 147:mylib/command.c ****     return 1;
+ 601              		.loc 1 147 12 view .LVU193
+ 602 0028 FAE7     		b	.L47
+ 603              		.cfi_endproc
+ 604              	.LFE136:
+ 606              		.section	.rodata.analize.str1.4,"aMS",%progbits,1
+ 607              		.align	2
+ 608              	.LC0:
+ 609 0000 6572726F 		.ascii	"error command!\015\012\000"
+ 609      7220636F 
+ 609      6D6D616E 
+ 609      64210D0A 
+ 609      00
+ 610              		.section	.text.analize,"ax",%progbits
+ 611              		.align	1
+ 612              		.global	analize
+ 613              		.syntax unified
+ 614              		.thumb
+ 615              		.thumb_func
+ 616              		.fpu fpv4-sp-d16
+ 618              	analize:
+ 619              	.LVL67:
+ 620              	.LFB137:
+ 152:mylib/command.c **** 
+ 153:mylib/command.c **** void analize(uint8_t *s){
+ 621              		.loc 1 153 25 is_stmt 1 view -0
+ 622              		.cfi_startproc
+ 623              		@ args = 0, pretend = 0, frame = 8
+ 624              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 16
+
+
+ 625              		.loc 1 153 25 is_stmt 0 view .LVU195
+ 626 0000 30B5     		push	{r4, r5, lr}
+ 627              	.LCFI7:
+ 628              		.cfi_def_cfa_offset 12
+ 629              		.cfi_offset 4, -12
+ 630              		.cfi_offset 5, -8
+ 631              		.cfi_offset 14, -4
+ 632 0002 83B0     		sub	sp, sp, #12
+ 633              	.LCFI8:
+ 634              		.cfi_def_cfa_offset 24
+ 635 0004 0546     		mov	r5, r0
+ 154:mylib/command.c ****   int i=0;
+ 636              		.loc 1 154 3 is_stmt 1 view .LVU196
+ 637              	.LVL68:
+ 155:mylib/command.c ****   int j=0,temp=0;
+ 638              		.loc 1 155 3 view .LVU197
+ 156:mylib/command.c ****   int prams_num;
+ 639              		.loc 1 156 3 view .LVU198
+ 157:mylib/command.c ****   char ** string_prams;
+ 640              		.loc 1 157 3 view .LVU199
+ 158:mylib/command.c ****   float * float_prams;
+ 641              		.loc 1 158 3 view .LVU200
+ 159:mylib/command.c ****   for(i=0;i<CMD.array_ptr;++i){
+ 642              		.loc 1 159 3 view .LVU201
+ 643              		.loc 1 159 8 is_stmt 0 view .LVU202
+ 644 0006 0024     		movs	r4, #0
+ 645              	.LVL69:
+ 646              	.L52:
+ 647              		.loc 1 159 11 is_stmt 1 discriminator 1 view .LVU203
+ 648              		.loc 1 159 16 is_stmt 0 discriminator 1 view .LVU204
+ 649 0008 184B     		ldr	r3, .L61
+ 650 000a D3F8C830 		ldr	r3, [r3, #200]
+ 651              		.loc 1 159 3 discriminator 1 view .LVU205
+ 652 000e A342     		cmp	r3, r4
+ 653 0010 26DD     		ble	.L59
+ 160:mylib/command.c ****     j=compare_cmd(CMD.array[i],(char*)s);
+ 654              		.loc 1 160 5 is_stmt 1 view .LVU206
+ 655              		.loc 1 160 7 is_stmt 0 view .LVU207
+ 656 0012 2946     		mov	r1, r5
+ 657 0014 154B     		ldr	r3, .L61
+ 658 0016 53F82400 		ldr	r0, [r3, r4, lsl #2]
+ 659 001a FFF7FEFF 		bl	compare_cmd
+ 660              	.LVL70:
+ 161:mylib/command.c ****     if(j){
+ 661              		.loc 1 161 5 is_stmt 1 view .LVU208
+ 662              		.loc 1 161 7 is_stmt 0 view .LVU209
+ 663 001e 08B9     		cbnz	r0, .L60
+ 159:mylib/command.c ****   for(i=0;i<CMD.array_ptr;++i){
+ 664              		.loc 1 159 27 is_stmt 1 discriminator 2 view .LVU210
+ 665 0020 0134     		adds	r4, r4, #1
+ 666              	.LVL71:
+ 159:mylib/command.c ****   for(i=0;i<CMD.array_ptr;++i){
+ 667              		.loc 1 159 27 is_stmt 0 discriminator 2 view .LVU211
+ 668 0022 F1E7     		b	.L52
+ 669              	.L60:
+ 162:mylib/command.c ****       prams_num=get_prams((char*)s+j,&string_prams,&float_prams);
+ 670              		.loc 1 162 7 is_stmt 1 view .LVU212
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 17
+
+
+ 671              		.loc 1 162 17 is_stmt 0 view .LVU213
+ 672 0024 6A46     		mov	r2, sp
+ 673 0026 01A9     		add	r1, sp, #4
+ 674 0028 2818     		adds	r0, r5, r0
+ 675              	.LVL72:
+ 676              		.loc 1 162 17 view .LVU214
+ 677 002a FFF7FEFF 		bl	get_prams
+ 678              	.LVL73:
+ 163:mylib/command.c ****       CMD.func_array[i](prams_num,string_prams,float_prams);
+ 679              		.loc 1 163 7 is_stmt 1 view .LVU215
+ 680              		.loc 1 163 21 is_stmt 0 view .LVU216
+ 681 002e 3234     		adds	r4, r4, #50
+ 682              	.LVL74:
+ 683              		.loc 1 163 21 view .LVU217
+ 684 0030 0E4B     		ldr	r3, .L61
+ 685 0032 03EB8404 		add	r4, r3, r4, lsl #2
+ 686              	.LVL75:
+ 687              		.loc 1 163 21 view .LVU218
+ 688 0036 6368     		ldr	r3, [r4, #4]
+ 689              		.loc 1 163 7 view .LVU219
+ 690 0038 009A     		ldr	r2, [sp]
+ 691 003a 0199     		ldr	r1, [sp, #4]
+ 692 003c 9847     		blx	r3
+ 693              	.LVL76:
+ 164:mylib/command.c ****       free(float_prams);
+ 694              		.loc 1 164 7 is_stmt 1 view .LVU220
+ 695 003e 0098     		ldr	r0, [sp]
+ 696 0040 FFF7FEFF 		bl	free
+ 697              	.LVL77:
+ 165:mylib/command.c ****       for(temp=0;temp<STRING_PRAM_NUM;++temp){
+ 698              		.loc 1 165 7 view .LVU221
+ 699              		.loc 1 165 15 is_stmt 0 view .LVU222
+ 700 0044 0024     		movs	r4, #0
+ 701              		.loc 1 165 7 view .LVU223
+ 702 0046 05E0     		b	.L54
+ 703              	.LVL78:
+ 704              	.L55:
+ 166:mylib/command.c ****         free(string_prams[temp]);
+ 705              		.loc 1 166 9 is_stmt 1 discriminator 3 view .LVU224
+ 706 0048 019B     		ldr	r3, [sp, #4]
+ 707 004a 53F82400 		ldr	r0, [r3, r4, lsl #2]
+ 708 004e FFF7FEFF 		bl	free
+ 709              	.LVL79:
+ 165:mylib/command.c ****       for(temp=0;temp<STRING_PRAM_NUM;++temp){
+ 710              		.loc 1 165 39 discriminator 3 view .LVU225
+ 711 0052 0134     		adds	r4, r4, #1
+ 712              	.LVL80:
+ 713              	.L54:
+ 165:mylib/command.c ****       for(temp=0;temp<STRING_PRAM_NUM;++temp){
+ 714              		.loc 1 165 18 discriminator 1 view .LVU226
+ 165:mylib/command.c ****       for(temp=0;temp<STRING_PRAM_NUM;++temp){
+ 715              		.loc 1 165 7 is_stmt 0 discriminator 1 view .LVU227
+ 716 0054 032C     		cmp	r4, #3
+ 717 0056 F7DD     		ble	.L55
+ 167:mylib/command.c ****       }
+ 168:mylib/command.c ****       free(string_prams);
+ 718              		.loc 1 168 7 is_stmt 1 view .LVU228
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 18
+
+
+ 719 0058 0198     		ldr	r0, [sp, #4]
+ 720 005a FFF7FEFF 		bl	free
+ 721              	.LVL81:
+ 169:mylib/command.c ****       return ;
+ 722              		.loc 1 169 7 view .LVU229
+ 723 005e 02E0     		b	.L51
+ 724              	.LVL82:
+ 725              	.L59:
+ 170:mylib/command.c ****     }
+ 171:mylib/command.c ****   }
+ 172:mylib/command.c ****   uprintf("error command!\r\n");
+ 726              		.loc 1 172 3 view .LVU230
+ 727 0060 0348     		ldr	r0, .L61+4
+ 728 0062 FFF7FEFF 		bl	uprintf
+ 729              	.LVL83:
+ 730              	.L51:
+ 173:mylib/command.c **** }
+ 731              		.loc 1 173 1 is_stmt 0 view .LVU231
+ 732 0066 03B0     		add	sp, sp, #12
+ 733              	.LCFI9:
+ 734              		.cfi_def_cfa_offset 12
+ 735              		@ sp needed
+ 736 0068 30BD     		pop	{r4, r5, pc}
+ 737              	.LVL84:
+ 738              	.L62:
+ 739              		.loc 1 173 1 view .LVU232
+ 740 006a 00BF     		.align	2
+ 741              	.L61:
+ 742 006c 00000000 		.word	CMD
+ 743 0070 00000000 		.word	.LC0
+ 744              		.cfi_endproc
+ 745              	.LFE137:
+ 747              		.comm	CMD,404,4
+ 748              		.text
+ 749              	.Letext0:
+ 750              		.file 2 "c:\\arm_gcc\\arm-none-eabi\\include\\machine\\_default_types.h"
+ 751              		.file 3 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\lock.h"
+ 752              		.file 4 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\_types.h"
+ 753              		.file 5 "c:\\arm_gcc\\lib\\gcc\\arm-none-eabi\\9.2.1\\include\\stddef.h"
+ 754              		.file 6 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\reent.h"
+ 755              		.file 7 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 756              		.file 8 "c:\\arm_gcc\\arm-none-eabi\\include\\stdlib.h"
+ 757              		.file 9 "mylib/command.h"
+ 758              		.file 10 "Drivers/CMSIS/Include/core_cm4.h"
+ 759              		.file 11 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h"
+ 760              		.file 12 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f405xx.h"
+ 761              		.file 13 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 762              		.file 14 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 763              		.file 15 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h"
+ 764              		.file 16 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
+ 765              		.file 17 "Inc/usart.h"
+ 766              		.file 18 "c:\\arm_gcc\\arm-none-eabi\\include\\ctype.h"
+ 767              		.file 19 "mylib/uart_ext.h"
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s 			page 19
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 command.c
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:19     .text.get_prams:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:26     .text.get_prams:00000000 get_prams
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:374    .text.get_prams:0000015c $d
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:379    .text.add_cmd:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:386    .text.add_cmd:00000000 add_cmd
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:425    .text.add_cmd:00000024 $d
+                            *COM*:00000194 CMD
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:430    .text.compare_cmd:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:437    .text.compare_cmd:00000000 compare_cmd
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:523    .text.compare_string:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:530    .text.compare_string:00000000 compare_string
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:607    .rodata.analize.str1.4:00000000 $d
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:611    .text.analize:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:618    .text.analize:00000000 analize
+C:\Users\ncer\AppData\Local\Temp\ccCoCW42.s:742    .text.analize:0000006c $d
+
+UNDEFINED SYMBOLS
+__aeabi_d2f
+malloc
+atof
+free
+_ctype_
+uprintf

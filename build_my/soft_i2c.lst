@@ -1,0 +1,1524 @@
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"soft_i2c.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.Soft_I2C_Init,"ax",%progbits
+  18              		.align	1
+  19              		.global	Soft_I2C_Init
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	Soft_I2C_Init:
+  27              	.LVL0:
+  28              	.LFB130:
+  29              		.file 1 "mylib/soft_i2c.c"
+   1:mylib/soft_i2c.c **** #include "soft_i2c.h"
+   2:mylib/soft_i2c.c **** 
+   3:mylib/soft_i2c.c **** #include "stdlib.h"
+   4:mylib/soft_i2c.c **** #include "string.h"
+   5:mylib/soft_i2c.c **** 
+   6:mylib/soft_i2c.c **** static GPIO_TypeDef *SCL_Port;
+   7:mylib/soft_i2c.c **** static GPIO_TypeDef *SDA_Port;
+   8:mylib/soft_i2c.c **** 
+   9:mylib/soft_i2c.c **** static uint16_t SDA_Pin;
+  10:mylib/soft_i2c.c **** static uint16_t SCL_Pin; 
+  11:mylib/soft_i2c.c **** 
+  12:mylib/soft_i2c.c **** #define SDA_H()  HAL_GPIO_WritePin(SDA_Port,SDA_Pin,GPIO_PIN_SET)
+  13:mylib/soft_i2c.c **** #define SDA_L()  HAL_GPIO_WritePin(SDA_Port,SDA_Pin,GPIO_PIN_RESET)
+  14:mylib/soft_i2c.c **** 
+  15:mylib/soft_i2c.c **** #define SCL_H()  HAL_GPIO_WritePin(SCL_Port,SCL_Pin,GPIO_PIN_SET)
+  16:mylib/soft_i2c.c **** #define SCL_L()  HAL_GPIO_WritePin(SCL_Port,SCL_Pin,GPIO_PIN_RESET)
+  17:mylib/soft_i2c.c **** 
+  18:mylib/soft_i2c.c **** #define SDA_Read() HAL_GPIO_ReadPin(SDA_Port,SDA_Pin)
+  19:mylib/soft_i2c.c **** #define SCL_Read() HAL_GPIO_ReadPin(SCL_Port,SCL_Pin)
+  20:mylib/soft_i2c.c **** 
+  21:mylib/soft_i2c.c **** void Soft_I2C_Init(GPIO_TypeDef * scl_port,uint16_t scl_pin,GPIO_TypeDef * sda_port,uint16_t sda_pi
+  30              		.loc 1 21 102 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 24
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		.loc 1 21 102 is_stmt 0 view .LVU1
+  35 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 24
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 2
+
+
+  38              		.cfi_offset 4, -24
+  39              		.cfi_offset 5, -20
+  40              		.cfi_offset 6, -16
+  41              		.cfi_offset 7, -12
+  42              		.cfi_offset 8, -8
+  43              		.cfi_offset 14, -4
+  44 0004 86B0     		sub	sp, sp, #24
+  45              	.LCFI1:
+  46              		.cfi_def_cfa_offset 48
+  47 0006 0646     		mov	r6, r0
+  48 0008 1046     		mov	r0, r2
+  49              	.LVL1:
+  22:mylib/soft_i2c.c **** 
+  23:mylib/soft_i2c.c ****     GPIO_InitTypeDef GPIO_InitStruct = {0};
+  50              		.loc 1 23 5 is_stmt 1 view .LVU2
+  51              		.loc 1 23 22 is_stmt 0 view .LVU3
+  52 000a 0024     		movs	r4, #0
+  53 000c 0194     		str	r4, [sp, #4]
+  54 000e 0294     		str	r4, [sp, #8]
+  55 0010 0394     		str	r4, [sp, #12]
+  56 0012 0494     		str	r4, [sp, #16]
+  57 0014 0594     		str	r4, [sp, #20]
+  24:mylib/soft_i2c.c **** 
+  25:mylib/soft_i2c.c ****     SCL_Port = scl_port;
+  58              		.loc 1 25 5 is_stmt 1 view .LVU4
+  59              		.loc 1 25 14 is_stmt 0 view .LVU5
+  60 0016 144D     		ldr	r5, .L3
+  61 0018 2E60     		str	r6, [r5]
+  26:mylib/soft_i2c.c ****     SDA_Port = sda_port;
+  62              		.loc 1 26 5 is_stmt 1 view .LVU6
+  63              		.loc 1 26 14 is_stmt 0 view .LVU7
+  64 001a 144F     		ldr	r7, .L3+4
+  65 001c 3A60     		str	r2, [r7]
+  27:mylib/soft_i2c.c ****     SDA_Pin = sda_pin;
+  66              		.loc 1 27 5 is_stmt 1 view .LVU8
+  67              		.loc 1 27 13 is_stmt 0 view .LVU9
+  68 001e DFF85480 		ldr	r8, .L3+12
+  69 0022 A8F80030 		strh	r3, [r8]	@ movhi
+  28:mylib/soft_i2c.c ****     SCL_Pin = scl_pin;
+  70              		.loc 1 28 5 is_stmt 1 view .LVU10
+  71              		.loc 1 28 13 is_stmt 0 view .LVU11
+  72 0026 124E     		ldr	r6, .L3+8
+  73              	.LVL2:
+  74              		.loc 1 28 13 view .LVU12
+  75 0028 3180     		strh	r1, [r6]	@ movhi
+  29:mylib/soft_i2c.c **** 
+  30:mylib/soft_i2c.c ****     HAL_GPIO_WritePin(SDA_Port,SDA_Pin,GPIO_PIN_SET);
+  76              		.loc 1 30 5 is_stmt 1 view .LVU13
+  77 002a 0122     		movs	r2, #1
+  78              	.LVL3:
+  79              		.loc 1 30 5 is_stmt 0 view .LVU14
+  80 002c 1946     		mov	r1, r3
+  81              	.LVL4:
+  82              		.loc 1 30 5 view .LVU15
+  83 002e FFF7FEFF 		bl	HAL_GPIO_WritePin
+  84              	.LVL5:
+  31:mylib/soft_i2c.c ****     HAL_GPIO_WritePin(SCL_Port,SCL_Pin,GPIO_PIN_SET);
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 3
+
+
+  85              		.loc 1 31 5 is_stmt 1 view .LVU16
+  86 0032 0122     		movs	r2, #1
+  87 0034 3188     		ldrh	r1, [r6]
+  88 0036 2868     		ldr	r0, [r5]
+  89 0038 FFF7FEFF 		bl	HAL_GPIO_WritePin
+  90              	.LVL6:
+  32:mylib/soft_i2c.c ****     GPIO_InitStruct.Pin = SDA_Pin;
+  91              		.loc 1 32 5 view .LVU17
+  92              		.loc 1 32 25 is_stmt 0 view .LVU18
+  93 003c B8F80030 		ldrh	r3, [r8]
+  94 0040 0193     		str	r3, [sp, #4]
+  33:mylib/soft_i2c.c ****     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  95              		.loc 1 33 5 is_stmt 1 view .LVU19
+  96              		.loc 1 33 26 is_stmt 0 view .LVU20
+  97 0042 1123     		movs	r3, #17
+  98 0044 0293     		str	r3, [sp, #8]
+  34:mylib/soft_i2c.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
+  99              		.loc 1 34 5 is_stmt 1 view .LVU21
+ 100              		.loc 1 34 26 is_stmt 0 view .LVU22
+ 101 0046 0394     		str	r4, [sp, #12]
+  35:mylib/soft_i2c.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+ 102              		.loc 1 35 5 is_stmt 1 view .LVU23
+ 103              		.loc 1 35 27 is_stmt 0 view .LVU24
+ 104 0048 0223     		movs	r3, #2
+ 105 004a 0493     		str	r3, [sp, #16]
+  36:mylib/soft_i2c.c ****     HAL_GPIO_Init(SDA_Port, &GPIO_InitStruct);
+ 106              		.loc 1 36 5 is_stmt 1 view .LVU25
+ 107 004c 01A9     		add	r1, sp, #4
+ 108 004e 3868     		ldr	r0, [r7]
+ 109 0050 FFF7FEFF 		bl	HAL_GPIO_Init
+ 110              	.LVL7:
+  37:mylib/soft_i2c.c **** 
+  38:mylib/soft_i2c.c ****     GPIO_InitStruct.Pin = SCL_Pin;
+ 111              		.loc 1 38 5 view .LVU26
+ 112              		.loc 1 38 25 is_stmt 0 view .LVU27
+ 113 0054 3388     		ldrh	r3, [r6]
+ 114 0056 0193     		str	r3, [sp, #4]
+  39:mylib/soft_i2c.c ****     HAL_GPIO_Init(SCL_Port, &GPIO_InitStruct); 
+ 115              		.loc 1 39 5 is_stmt 1 view .LVU28
+ 116 0058 01A9     		add	r1, sp, #4
+ 117 005a 2868     		ldr	r0, [r5]
+ 118 005c FFF7FEFF 		bl	HAL_GPIO_Init
+ 119              	.LVL8:
+  40:mylib/soft_i2c.c **** 
+  41:mylib/soft_i2c.c **** }
+ 120              		.loc 1 41 1 is_stmt 0 view .LVU29
+ 121 0060 06B0     		add	sp, sp, #24
+ 122              	.LCFI2:
+ 123              		.cfi_def_cfa_offset 24
+ 124              		@ sp needed
+ 125 0062 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 126              	.L4:
+ 127 0066 00BF     		.align	2
+ 128              	.L3:
+ 129 0068 00000000 		.word	.LANCHOR0
+ 130 006c 00000000 		.word	.LANCHOR1
+ 131 0070 00000000 		.word	.LANCHOR3
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 4
+
+
+ 132 0074 00000000 		.word	.LANCHOR2
+ 133              		.cfi_endproc
+ 134              	.LFE130:
+ 136              		.section	.text.I2C_delay,"ax",%progbits
+ 137              		.align	1
+ 138              		.global	I2C_delay
+ 139              		.syntax unified
+ 140              		.thumb
+ 141              		.thumb_func
+ 142              		.fpu fpv4-sp-d16
+ 144              	I2C_delay:
+ 145              	.LFB131:
+  42:mylib/soft_i2c.c **** 
+  43:mylib/soft_i2c.c **** void I2C_delay(void)
+  44:mylib/soft_i2c.c **** {
+ 146              		.loc 1 44 1 is_stmt 1 view -0
+ 147              		.cfi_startproc
+ 148              		@ args = 0, pretend = 0, frame = 0
+ 149              		@ frame_needed = 0, uses_anonymous_args = 0
+ 150              		@ link register save eliminated.
+  45:mylib/soft_i2c.c ****   for(int i=0;i<20;++i){
+ 151              		.loc 1 45 3 view .LVU31
+ 152              	.LBB2:
+ 153              		.loc 1 45 7 view .LVU32
+ 154              	.LVL9:
+ 155              		.loc 1 45 11 is_stmt 0 view .LVU33
+ 156 0000 0023     		movs	r3, #0
+ 157              		.loc 1 45 3 view .LVU34
+ 158 0002 01E0     		b	.L6
+ 159              	.LVL10:
+ 160              	.L7:
+  46:mylib/soft_i2c.c ****     	__NOP();
+ 161              		.loc 1 46 6 is_stmt 1 discriminator 3 view .LVU35
+ 162              		.syntax unified
+ 163              	@ 46 "mylib/soft_i2c.c" 1
+ 164 0004 00BF     		nop
+ 165              	@ 0 "" 2
+  45:mylib/soft_i2c.c ****   for(int i=0;i<20;++i){
+ 166              		.loc 1 45 20 discriminator 3 view .LVU36
+ 167              		.thumb
+ 168              		.syntax unified
+ 169 0006 0133     		adds	r3, r3, #1
+ 170              	.LVL11:
+ 171              	.L6:
+  45:mylib/soft_i2c.c ****   for(int i=0;i<20;++i){
+ 172              		.loc 1 45 15 discriminator 1 view .LVU37
+  45:mylib/soft_i2c.c ****   for(int i=0;i<20;++i){
+ 173              		.loc 1 45 3 is_stmt 0 discriminator 1 view .LVU38
+ 174 0008 132B     		cmp	r3, #19
+ 175 000a FBDD     		ble	.L7
+ 176              	.LBE2:
+  47:mylib/soft_i2c.c ****   }
+  48:mylib/soft_i2c.c **** }
+ 177              		.loc 1 48 1 view .LVU39
+ 178 000c 7047     		bx	lr
+ 179              		.cfi_endproc
+ 180              	.LFE131:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 5
+
+
+ 182              		.section	.text.I2C_Ack,"ax",%progbits
+ 183              		.align	1
+ 184              		.syntax unified
+ 185              		.thumb
+ 186              		.thumb_func
+ 187              		.fpu fpv4-sp-d16
+ 189              	I2C_Ack:
+ 190              	.LFB134:
+  49:mylib/soft_i2c.c **** 
+  50:mylib/soft_i2c.c **** 
+  51:mylib/soft_i2c.c **** int I2C_Start(void){
+  52:mylib/soft_i2c.c **** 	SDA_H();
+  53:mylib/soft_i2c.c **** 	SCL_H();
+  54:mylib/soft_i2c.c **** 	I2C_delay();
+  55:mylib/soft_i2c.c **** 	if(!SDA_Read())
+  56:mylib/soft_i2c.c **** 	{
+  57:mylib/soft_i2c.c **** 		return DISABLE;
+  58:mylib/soft_i2c.c **** 	}
+  59:mylib/soft_i2c.c ****     SDA_L();
+  60:mylib/soft_i2c.c **** 	I2C_delay();
+  61:mylib/soft_i2c.c **** 	if(SDA_Read())
+  62:mylib/soft_i2c.c **** 	{
+  63:mylib/soft_i2c.c **** 		return DISABLE;
+  64:mylib/soft_i2c.c **** 	}
+  65:mylib/soft_i2c.c ****     SCL_L();
+  66:mylib/soft_i2c.c **** 	return ENABLE;
+  67:mylib/soft_i2c.c **** }
+  68:mylib/soft_i2c.c **** 
+  69:mylib/soft_i2c.c **** 
+  70:mylib/soft_i2c.c **** uint8_t I2C_GetAck(void)
+  71:mylib/soft_i2c.c **** {
+  72:mylib/soft_i2c.c ****   uint8_t time = 0;
+  73:mylib/soft_i2c.c **** 	SDA_H();
+  74:mylib/soft_i2c.c **** 	I2C_delay();
+  75:mylib/soft_i2c.c **** 	SCL_H();
+  76:mylib/soft_i2c.c **** 	I2C_delay();
+  77:mylib/soft_i2c.c **** 	while(SDA_Read())
+  78:mylib/soft_i2c.c **** 	{
+  79:mylib/soft_i2c.c **** 		time++;
+  80:mylib/soft_i2c.c **** 		if(time > 250)
+  81:mylib/soft_i2c.c **** 		{			
+  82:mylib/soft_i2c.c **** 			SCL_L();
+  83:mylib/soft_i2c.c **** 			return DISABLE;
+  84:mylib/soft_i2c.c **** 		}
+  85:mylib/soft_i2c.c **** 	}
+  86:mylib/soft_i2c.c **** 	SCL_L();
+  87:mylib/soft_i2c.c **** 	return ENABLE;
+  88:mylib/soft_i2c.c **** }
+  89:mylib/soft_i2c.c **** 
+  90:mylib/soft_i2c.c **** static void I2C_Ack()
+  91:mylib/soft_i2c.c **** {
+ 191              		.loc 1 91 1 is_stmt 1 view -0
+ 192              		.cfi_startproc
+ 193              		@ args = 0, pretend = 0, frame = 0
+ 194              		@ frame_needed = 0, uses_anonymous_args = 0
+ 195 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 196              	.LCFI3:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 6
+
+
+ 197              		.cfi_def_cfa_offset 24
+ 198              		.cfi_offset 3, -24
+ 199              		.cfi_offset 4, -20
+ 200              		.cfi_offset 5, -16
+ 201              		.cfi_offset 6, -12
+ 202              		.cfi_offset 7, -8
+ 203              		.cfi_offset 14, -4
+  92:mylib/soft_i2c.c **** 	SCL_L();
+ 204              		.loc 1 92 2 view .LVU41
+ 205 0002 134D     		ldr	r5, .L10
+ 206 0004 134C     		ldr	r4, .L10+4
+ 207 0006 0022     		movs	r2, #0
+ 208 0008 2988     		ldrh	r1, [r5]
+ 209 000a 2068     		ldr	r0, [r4]
+ 210 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 211              	.LVL12:
+  93:mylib/soft_i2c.c **** 	I2C_delay();
+ 212              		.loc 1 93 2 view .LVU42
+ 213 0010 FFF7FEFF 		bl	I2C_delay
+ 214              	.LVL13:
+  94:mylib/soft_i2c.c **** 	SDA_L();
+ 215              		.loc 1 94 2 view .LVU43
+ 216 0014 104F     		ldr	r7, .L10+8
+ 217 0016 114E     		ldr	r6, .L10+12
+ 218 0018 0022     		movs	r2, #0
+ 219 001a 3988     		ldrh	r1, [r7]
+ 220 001c 3068     		ldr	r0, [r6]
+ 221 001e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 222              	.LVL14:
+  95:mylib/soft_i2c.c **** 	I2C_delay();
+ 223              		.loc 1 95 2 view .LVU44
+ 224 0022 FFF7FEFF 		bl	I2C_delay
+ 225              	.LVL15:
+  96:mylib/soft_i2c.c **** 	SCL_H();
+ 226              		.loc 1 96 2 view .LVU45
+ 227 0026 0122     		movs	r2, #1
+ 228 0028 2988     		ldrh	r1, [r5]
+ 229 002a 2068     		ldr	r0, [r4]
+ 230 002c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 231              	.LVL16:
+  97:mylib/soft_i2c.c **** 	I2C_delay();
+ 232              		.loc 1 97 2 view .LVU46
+ 233 0030 FFF7FEFF 		bl	I2C_delay
+ 234              	.LVL17:
+  98:mylib/soft_i2c.c **** 	SCL_L();
+ 235              		.loc 1 98 2 view .LVU47
+ 236 0034 0022     		movs	r2, #0
+ 237 0036 2988     		ldrh	r1, [r5]
+ 238 0038 2068     		ldr	r0, [r4]
+ 239 003a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 240              	.LVL18:
+  99:mylib/soft_i2c.c ****   I2C_delay();
+ 241              		.loc 1 99 3 view .LVU48
+ 242 003e FFF7FEFF 		bl	I2C_delay
+ 243              	.LVL19:
+ 100:mylib/soft_i2c.c ****   SDA_H();
+ 244              		.loc 1 100 3 view .LVU49
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 7
+
+
+ 245 0042 0122     		movs	r2, #1
+ 246 0044 3988     		ldrh	r1, [r7]
+ 247 0046 3068     		ldr	r0, [r6]
+ 248 0048 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 249              	.LVL20:
+ 101:mylib/soft_i2c.c ****   
+ 102:mylib/soft_i2c.c **** }
+ 250              		.loc 1 102 1 is_stmt 0 view .LVU50
+ 251 004c F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 252              	.L11:
+ 253 004e 00BF     		.align	2
+ 254              	.L10:
+ 255 0050 00000000 		.word	.LANCHOR3
+ 256 0054 00000000 		.word	.LANCHOR0
+ 257 0058 00000000 		.word	.LANCHOR2
+ 258 005c 00000000 		.word	.LANCHOR1
+ 259              		.cfi_endproc
+ 260              	.LFE134:
+ 262              		.section	.text.I2C_NoAck,"ax",%progbits
+ 263              		.align	1
+ 264              		.syntax unified
+ 265              		.thumb
+ 266              		.thumb_func
+ 267              		.fpu fpv4-sp-d16
+ 269              	I2C_NoAck:
+ 270              	.LFB135:
+ 103:mylib/soft_i2c.c ****  
+ 104:mylib/soft_i2c.c **** static void I2C_NoAck()
+ 105:mylib/soft_i2c.c **** {
+ 271              		.loc 1 105 1 is_stmt 1 view -0
+ 272              		.cfi_startproc
+ 273              		@ args = 0, pretend = 0, frame = 0
+ 274              		@ frame_needed = 0, uses_anonymous_args = 0
+ 275 0000 38B5     		push	{r3, r4, r5, lr}
+ 276              	.LCFI4:
+ 277              		.cfi_def_cfa_offset 16
+ 278              		.cfi_offset 3, -16
+ 279              		.cfi_offset 4, -12
+ 280              		.cfi_offset 5, -8
+ 281              		.cfi_offset 14, -4
+ 106:mylib/soft_i2c.c **** 	SCL_L();	
+ 282              		.loc 1 106 2 view .LVU52
+ 283 0002 0F4D     		ldr	r5, .L14
+ 284 0004 0F4C     		ldr	r4, .L14+4
+ 285 0006 0022     		movs	r2, #0
+ 286 0008 2988     		ldrh	r1, [r5]
+ 287 000a 2068     		ldr	r0, [r4]
+ 288 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 289              	.LVL21:
+ 107:mylib/soft_i2c.c **** 	I2C_delay();
+ 290              		.loc 1 107 2 view .LVU53
+ 291 0010 FFF7FEFF 		bl	I2C_delay
+ 292              	.LVL22:
+ 108:mylib/soft_i2c.c **** 	SDA_H();
+ 293              		.loc 1 108 2 view .LVU54
+ 294 0014 0122     		movs	r2, #1
+ 295 0016 0C4B     		ldr	r3, .L14+8
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 8
+
+
+ 296 0018 1988     		ldrh	r1, [r3]
+ 297 001a 0C4B     		ldr	r3, .L14+12
+ 298 001c 1868     		ldr	r0, [r3]
+ 299 001e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 300              	.LVL23:
+ 109:mylib/soft_i2c.c **** 	I2C_delay();
+ 301              		.loc 1 109 2 view .LVU55
+ 302 0022 FFF7FEFF 		bl	I2C_delay
+ 303              	.LVL24:
+ 110:mylib/soft_i2c.c **** 	SCL_H();
+ 304              		.loc 1 110 2 view .LVU56
+ 305 0026 0122     		movs	r2, #1
+ 306 0028 2988     		ldrh	r1, [r5]
+ 307 002a 2068     		ldr	r0, [r4]
+ 308 002c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 309              	.LVL25:
+ 111:mylib/soft_i2c.c **** 	I2C_delay();
+ 310              		.loc 1 111 2 view .LVU57
+ 311 0030 FFF7FEFF 		bl	I2C_delay
+ 312              	.LVL26:
+ 112:mylib/soft_i2c.c **** 	SCL_L();
+ 313              		.loc 1 112 2 view .LVU58
+ 314 0034 0022     		movs	r2, #0
+ 315 0036 2988     		ldrh	r1, [r5]
+ 316 0038 2068     		ldr	r0, [r4]
+ 317 003a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 318              	.LVL27:
+ 113:mylib/soft_i2c.c **** }
+ 319              		.loc 1 113 1 is_stmt 0 view .LVU59
+ 320 003e 38BD     		pop	{r3, r4, r5, pc}
+ 321              	.L15:
+ 322              		.align	2
+ 323              	.L14:
+ 324 0040 00000000 		.word	.LANCHOR3
+ 325 0044 00000000 		.word	.LANCHOR0
+ 326 0048 00000000 		.word	.LANCHOR2
+ 327 004c 00000000 		.word	.LANCHOR1
+ 328              		.cfi_endproc
+ 329              	.LFE135:
+ 331              		.section	.text.I2C_Start,"ax",%progbits
+ 332              		.align	1
+ 333              		.global	I2C_Start
+ 334              		.syntax unified
+ 335              		.thumb
+ 336              		.thumb_func
+ 337              		.fpu fpv4-sp-d16
+ 339              	I2C_Start:
+ 340              	.LFB132:
+  51:mylib/soft_i2c.c **** 	SDA_H();
+ 341              		.loc 1 51 20 is_stmt 1 view -0
+ 342              		.cfi_startproc
+ 343              		@ args = 0, pretend = 0, frame = 0
+ 344              		@ frame_needed = 0, uses_anonymous_args = 0
+ 345 0000 38B5     		push	{r3, r4, r5, lr}
+ 346              	.LCFI5:
+ 347              		.cfi_def_cfa_offset 16
+ 348              		.cfi_offset 3, -16
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 9
+
+
+ 349              		.cfi_offset 4, -12
+ 350              		.cfi_offset 5, -8
+ 351              		.cfi_offset 14, -4
+  52:mylib/soft_i2c.c **** 	SCL_H();
+ 352              		.loc 1 52 2 view .LVU61
+ 353 0002 174D     		ldr	r5, .L23
+ 354 0004 174C     		ldr	r4, .L23+4
+ 355 0006 0122     		movs	r2, #1
+ 356 0008 2988     		ldrh	r1, [r5]
+ 357 000a 2068     		ldr	r0, [r4]
+ 358 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 359              	.LVL28:
+  53:mylib/soft_i2c.c **** 	I2C_delay();
+ 360              		.loc 1 53 2 view .LVU62
+ 361 0010 0122     		movs	r2, #1
+ 362 0012 154B     		ldr	r3, .L23+8
+ 363 0014 1988     		ldrh	r1, [r3]
+ 364 0016 154B     		ldr	r3, .L23+12
+ 365 0018 1868     		ldr	r0, [r3]
+ 366 001a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 367              	.LVL29:
+  54:mylib/soft_i2c.c **** 	if(!SDA_Read())
+ 368              		.loc 1 54 2 view .LVU63
+ 369 001e FFF7FEFF 		bl	I2C_delay
+ 370              	.LVL30:
+  55:mylib/soft_i2c.c **** 	{
+ 371              		.loc 1 55 2 view .LVU64
+  55:mylib/soft_i2c.c **** 	{
+ 372              		.loc 1 55 6 is_stmt 0 view .LVU65
+ 373 0022 2988     		ldrh	r1, [r5]
+ 374 0024 2068     		ldr	r0, [r4]
+ 375 0026 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 376              	.LVL31:
+  55:mylib/soft_i2c.c **** 	{
+ 377              		.loc 1 55 4 view .LVU66
+ 378 002a 08B9     		cbnz	r0, .L21
+  57:mylib/soft_i2c.c **** 	}
+ 379              		.loc 1 57 10 view .LVU67
+ 380 002c 0020     		movs	r0, #0
+ 381              	.L16:
+  67:mylib/soft_i2c.c **** 
+ 382              		.loc 1 67 1 view .LVU68
+ 383 002e 38BD     		pop	{r3, r4, r5, pc}
+ 384              	.L21:
+  59:mylib/soft_i2c.c **** 	I2C_delay();
+ 385              		.loc 1 59 5 is_stmt 1 view .LVU69
+ 386 0030 0022     		movs	r2, #0
+ 387 0032 2988     		ldrh	r1, [r5]
+ 388 0034 2068     		ldr	r0, [r4]
+ 389 0036 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 390              	.LVL32:
+  60:mylib/soft_i2c.c **** 	if(SDA_Read())
+ 391              		.loc 1 60 2 view .LVU70
+ 392 003a FFF7FEFF 		bl	I2C_delay
+ 393              	.LVL33:
+  61:mylib/soft_i2c.c **** 	{
+ 394              		.loc 1 61 2 view .LVU71
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 10
+
+
+  61:mylib/soft_i2c.c **** 	{
+ 395              		.loc 1 61 5 is_stmt 0 view .LVU72
+ 396 003e 2988     		ldrh	r1, [r5]
+ 397 0040 2068     		ldr	r0, [r4]
+ 398 0042 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 399              	.LVL34:
+  61:mylib/soft_i2c.c **** 	{
+ 400              		.loc 1 61 4 view .LVU73
+ 401 0046 08B1     		cbz	r0, .L22
+  63:mylib/soft_i2c.c **** 	}
+ 402              		.loc 1 63 10 view .LVU74
+ 403 0048 0020     		movs	r0, #0
+ 404 004a F0E7     		b	.L16
+ 405              	.L22:
+  65:mylib/soft_i2c.c **** 	return ENABLE;
+ 406              		.loc 1 65 5 is_stmt 1 view .LVU75
+ 407 004c 0022     		movs	r2, #0
+ 408 004e 064B     		ldr	r3, .L23+8
+ 409 0050 1988     		ldrh	r1, [r3]
+ 410 0052 064B     		ldr	r3, .L23+12
+ 411 0054 1868     		ldr	r0, [r3]
+ 412 0056 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 413              	.LVL35:
+  66:mylib/soft_i2c.c **** }
+ 414              		.loc 1 66 2 view .LVU76
+  66:mylib/soft_i2c.c **** }
+ 415              		.loc 1 66 9 is_stmt 0 view .LVU77
+ 416 005a 0120     		movs	r0, #1
+ 417 005c E7E7     		b	.L16
+ 418              	.L24:
+ 419 005e 00BF     		.align	2
+ 420              	.L23:
+ 421 0060 00000000 		.word	.LANCHOR2
+ 422 0064 00000000 		.word	.LANCHOR1
+ 423 0068 00000000 		.word	.LANCHOR3
+ 424 006c 00000000 		.word	.LANCHOR0
+ 425              		.cfi_endproc
+ 426              	.LFE132:
+ 428              		.section	.text.I2C_GetAck,"ax",%progbits
+ 429              		.align	1
+ 430              		.global	I2C_GetAck
+ 431              		.syntax unified
+ 432              		.thumb
+ 433              		.thumb_func
+ 434              		.fpu fpv4-sp-d16
+ 436              	I2C_GetAck:
+ 437              	.LFB133:
+  71:mylib/soft_i2c.c ****   uint8_t time = 0;
+ 438              		.loc 1 71 1 is_stmt 1 view -0
+ 439              		.cfi_startproc
+ 440              		@ args = 0, pretend = 0, frame = 0
+ 441              		@ frame_needed = 0, uses_anonymous_args = 0
+ 442 0000 10B5     		push	{r4, lr}
+ 443              	.LCFI6:
+ 444              		.cfi_def_cfa_offset 8
+ 445              		.cfi_offset 4, -8
+ 446              		.cfi_offset 14, -4
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 11
+
+
+  72:mylib/soft_i2c.c **** 	SDA_H();
+ 447              		.loc 1 72 3 view .LVU79
+ 448              	.LVL36:
+  73:mylib/soft_i2c.c **** 	I2C_delay();
+ 449              		.loc 1 73 2 view .LVU80
+ 450 0002 0122     		movs	r2, #1
+ 451 0004 174B     		ldr	r3, .L31
+ 452 0006 1988     		ldrh	r1, [r3]
+ 453 0008 174B     		ldr	r3, .L31+4
+ 454 000a 1868     		ldr	r0, [r3]
+ 455 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 456              	.LVL37:
+  74:mylib/soft_i2c.c **** 	SCL_H();
+ 457              		.loc 1 74 2 view .LVU81
+ 458 0010 FFF7FEFF 		bl	I2C_delay
+ 459              	.LVL38:
+  75:mylib/soft_i2c.c **** 	I2C_delay();
+ 460              		.loc 1 75 2 view .LVU82
+ 461 0014 0122     		movs	r2, #1
+ 462 0016 154B     		ldr	r3, .L31+8
+ 463 0018 1988     		ldrh	r1, [r3]
+ 464 001a 154B     		ldr	r3, .L31+12
+ 465 001c 1868     		ldr	r0, [r3]
+ 466 001e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 467              	.LVL39:
+  76:mylib/soft_i2c.c **** 	while(SDA_Read())
+ 468              		.loc 1 76 2 view .LVU83
+ 469 0022 FFF7FEFF 		bl	I2C_delay
+ 470              	.LVL40:
+  77:mylib/soft_i2c.c **** 	{
+ 471              		.loc 1 77 2 view .LVU84
+  72:mylib/soft_i2c.c **** 	SDA_H();
+ 472              		.loc 1 72 11 is_stmt 0 view .LVU85
+ 473 0026 0024     		movs	r4, #0
+ 474              	.LVL41:
+ 475              	.L26:
+  77:mylib/soft_i2c.c **** 	{
+ 476              		.loc 1 77 7 is_stmt 1 view .LVU86
+  77:mylib/soft_i2c.c **** 	{
+ 477              		.loc 1 77 8 is_stmt 0 view .LVU87
+ 478 0028 0E4B     		ldr	r3, .L31
+ 479 002a 1988     		ldrh	r1, [r3]
+ 480 002c 0E4B     		ldr	r3, .L31+4
+ 481 002e 1868     		ldr	r0, [r3]
+ 482 0030 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 483              	.LVL42:
+  77:mylib/soft_i2c.c **** 	{
+ 484              		.loc 1 77 7 view .LVU88
+ 485 0034 60B1     		cbz	r0, .L30
+  79:mylib/soft_i2c.c **** 		if(time > 250)
+ 486              		.loc 1 79 3 is_stmt 1 view .LVU89
+  79:mylib/soft_i2c.c **** 		if(time > 250)
+ 487              		.loc 1 79 7 is_stmt 0 view .LVU90
+ 488 0036 0134     		adds	r4, r4, #1
+ 489              	.LVL43:
+  79:mylib/soft_i2c.c **** 		if(time > 250)
+ 490              		.loc 1 79 7 view .LVU91
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 12
+
+
+ 491 0038 E4B2     		uxtb	r4, r4
+ 492              	.LVL44:
+  80:mylib/soft_i2c.c **** 		{			
+ 493              		.loc 1 80 3 is_stmt 1 view .LVU92
+  80:mylib/soft_i2c.c **** 		{			
+ 494              		.loc 1 80 5 is_stmt 0 view .LVU93
+ 495 003a FA2C     		cmp	r4, #250
+ 496 003c F4D9     		bls	.L26
+  82:mylib/soft_i2c.c **** 			return DISABLE;
+ 497              		.loc 1 82 4 is_stmt 1 view .LVU94
+ 498 003e 0022     		movs	r2, #0
+ 499 0040 0A4B     		ldr	r3, .L31+8
+ 500 0042 1988     		ldrh	r1, [r3]
+ 501 0044 0A4B     		ldr	r3, .L31+12
+ 502 0046 1868     		ldr	r0, [r3]
+ 503 0048 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 504              	.LVL45:
+  83:mylib/soft_i2c.c **** 		}
+ 505              		.loc 1 83 4 view .LVU95
+  83:mylib/soft_i2c.c **** 		}
+ 506              		.loc 1 83 11 is_stmt 0 view .LVU96
+ 507 004c 0020     		movs	r0, #0
+ 508 004e 07E0     		b	.L27
+ 509              	.L30:
+  86:mylib/soft_i2c.c **** 	return ENABLE;
+ 510              		.loc 1 86 2 is_stmt 1 view .LVU97
+ 511 0050 0022     		movs	r2, #0
+ 512 0052 064B     		ldr	r3, .L31+8
+ 513 0054 1988     		ldrh	r1, [r3]
+ 514 0056 064B     		ldr	r3, .L31+12
+ 515 0058 1868     		ldr	r0, [r3]
+ 516 005a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 517              	.LVL46:
+  87:mylib/soft_i2c.c **** }
+ 518              		.loc 1 87 2 view .LVU98
+  87:mylib/soft_i2c.c **** }
+ 519              		.loc 1 87 9 is_stmt 0 view .LVU99
+ 520 005e 0120     		movs	r0, #1
+ 521              	.L27:
+  88:mylib/soft_i2c.c **** 
+ 522              		.loc 1 88 1 view .LVU100
+ 523 0060 10BD     		pop	{r4, pc}
+ 524              	.LVL47:
+ 525              	.L32:
+  88:mylib/soft_i2c.c **** 
+ 526              		.loc 1 88 1 view .LVU101
+ 527 0062 00BF     		.align	2
+ 528              	.L31:
+ 529 0064 00000000 		.word	.LANCHOR2
+ 530 0068 00000000 		.word	.LANCHOR1
+ 531 006c 00000000 		.word	.LANCHOR3
+ 532 0070 00000000 		.word	.LANCHOR0
+ 533              		.cfi_endproc
+ 534              	.LFE133:
+ 536              		.section	.text.I2C_SendByte,"ax",%progbits
+ 537              		.align	1
+ 538              		.global	I2C_SendByte
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 13
+
+
+ 539              		.syntax unified
+ 540              		.thumb
+ 541              		.thumb_func
+ 542              		.fpu fpv4-sp-d16
+ 544              	I2C_SendByte:
+ 545              	.LVL48:
+ 546              	.LFB136:
+ 114:mylib/soft_i2c.c **** 
+ 115:mylib/soft_i2c.c **** void I2C_SendByte(uint8_t Data){
+ 547              		.loc 1 115 32 is_stmt 1 view -0
+ 548              		.cfi_startproc
+ 549              		@ args = 0, pretend = 0, frame = 0
+ 550              		@ frame_needed = 0, uses_anonymous_args = 0
+ 551              		.loc 1 115 32 is_stmt 0 view .LVU103
+ 552 0000 38B5     		push	{r3, r4, r5, lr}
+ 553              	.LCFI7:
+ 554              		.cfi_def_cfa_offset 16
+ 555              		.cfi_offset 3, -16
+ 556              		.cfi_offset 4, -12
+ 557              		.cfi_offset 5, -8
+ 558              		.cfi_offset 14, -4
+ 559 0002 0446     		mov	r4, r0
+ 116:mylib/soft_i2c.c ****   uint8_t cnt;	
+ 560              		.loc 1 116 3 is_stmt 1 view .LVU104
+ 117:mylib/soft_i2c.c ****   for(cnt=0; cnt<8; cnt++)
+ 561              		.loc 1 117 3 view .LVU105
+ 562              	.LVL49:
+ 563              		.loc 1 117 10 is_stmt 0 view .LVU106
+ 564 0004 0025     		movs	r5, #0
+ 565              		.loc 1 117 3 view .LVU107
+ 566 0006 13E0     		b	.L34
+ 567              	.LVL50:
+ 568              	.L40:
+ 118:mylib/soft_i2c.c ****   {
+ 119:mylib/soft_i2c.c ****     SCL_L();                              
+ 120:mylib/soft_i2c.c ****     I2C_delay();
+ 121:mylib/soft_i2c.c ****  
+ 122:mylib/soft_i2c.c ****     if(Data & 0x80)
+ 123:mylib/soft_i2c.c ****     {
+ 124:mylib/soft_i2c.c ****       SDA_H();                         
+ 569              		.loc 1 124 7 is_stmt 1 view .LVU108
+ 570 0008 0122     		movs	r2, #1
+ 571 000a 194B     		ldr	r3, .L41
+ 572 000c 1988     		ldrh	r1, [r3]
+ 573 000e 194B     		ldr	r3, .L41+4
+ 574 0010 1868     		ldr	r0, [r3]
+ 575 0012 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 576              	.LVL51:
+ 577              	.L36:
+ 125:mylib/soft_i2c.c ****     }
+ 126:mylib/soft_i2c.c ****     else
+ 127:mylib/soft_i2c.c ****     {
+ 128:mylib/soft_i2c.c ****       SDA_L();                         
+ 129:mylib/soft_i2c.c ****     }
+ 130:mylib/soft_i2c.c ****     Data <<= 1;
+ 578              		.loc 1 130 5 discriminator 2 view .LVU109
+ 579              		.loc 1 130 10 is_stmt 0 discriminator 2 view .LVU110
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 14
+
+
+ 580 0016 6400     		lsls	r4, r4, #1
+ 581              	.LVL52:
+ 582              		.loc 1 130 10 discriminator 2 view .LVU111
+ 583 0018 E4B2     		uxtb	r4, r4
+ 584              	.LVL53:
+ 131:mylib/soft_i2c.c ****     SCL_H();                              
+ 585              		.loc 1 131 5 is_stmt 1 discriminator 2 view .LVU112
+ 586 001a 0122     		movs	r2, #1
+ 587 001c 164B     		ldr	r3, .L41+8
+ 588 001e 1988     		ldrh	r1, [r3]
+ 589 0020 164B     		ldr	r3, .L41+12
+ 590 0022 1868     		ldr	r0, [r3]
+ 591 0024 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 592              	.LVL54:
+ 132:mylib/soft_i2c.c ****     I2C_delay();
+ 593              		.loc 1 132 5 discriminator 2 view .LVU113
+ 594 0028 FFF7FEFF 		bl	I2C_delay
+ 595              	.LVL55:
+ 117:mylib/soft_i2c.c ****   {
+ 596              		.loc 1 117 21 discriminator 2 view .LVU114
+ 117:mylib/soft_i2c.c ****   {
+ 597              		.loc 1 117 24 is_stmt 0 discriminator 2 view .LVU115
+ 598 002c 0135     		adds	r5, r5, #1
+ 599              	.LVL56:
+ 117:mylib/soft_i2c.c ****   {
+ 600              		.loc 1 117 24 discriminator 2 view .LVU116
+ 601 002e EDB2     		uxtb	r5, r5
+ 602              	.LVL57:
+ 603              	.L34:
+ 117:mylib/soft_i2c.c ****   {
+ 604              		.loc 1 117 14 is_stmt 1 discriminator 1 view .LVU117
+ 117:mylib/soft_i2c.c ****   {
+ 605              		.loc 1 117 3 is_stmt 0 discriminator 1 view .LVU118
+ 606 0030 072D     		cmp	r5, #7
+ 607 0032 13D8     		bhi	.L39
+ 119:mylib/soft_i2c.c ****     I2C_delay();
+ 608              		.loc 1 119 5 is_stmt 1 view .LVU119
+ 609 0034 0022     		movs	r2, #0
+ 610 0036 104B     		ldr	r3, .L41+8
+ 611 0038 1988     		ldrh	r1, [r3]
+ 612 003a 104B     		ldr	r3, .L41+12
+ 613 003c 1868     		ldr	r0, [r3]
+ 614 003e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 615              	.LVL58:
+ 120:mylib/soft_i2c.c ****  
+ 616              		.loc 1 120 5 view .LVU120
+ 617 0042 FFF7FEFF 		bl	I2C_delay
+ 618              	.LVL59:
+ 122:mylib/soft_i2c.c ****     {
+ 619              		.loc 1 122 5 view .LVU121
+ 122:mylib/soft_i2c.c ****     {
+ 620              		.loc 1 122 7 is_stmt 0 view .LVU122
+ 621 0046 14F0800F 		tst	r4, #128
+ 622 004a DDD1     		bne	.L40
+ 128:mylib/soft_i2c.c ****     }
+ 623              		.loc 1 128 7 is_stmt 1 view .LVU123
+ 624 004c 0022     		movs	r2, #0
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 15
+
+
+ 625 004e 084B     		ldr	r3, .L41
+ 626 0050 1988     		ldrh	r1, [r3]
+ 627 0052 084B     		ldr	r3, .L41+4
+ 628 0054 1868     		ldr	r0, [r3]
+ 629 0056 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 630              	.LVL60:
+ 631 005a DCE7     		b	.L36
+ 632              	.L39:
+ 133:mylib/soft_i2c.c ****   }
+ 134:mylib/soft_i2c.c ****   SCL_L();                                   
+ 633              		.loc 1 134 3 view .LVU124
+ 634 005c 0022     		movs	r2, #0
+ 635 005e 064B     		ldr	r3, .L41+8
+ 636 0060 1988     		ldrh	r1, [r3]
+ 637 0062 064B     		ldr	r3, .L41+12
+ 638 0064 1868     		ldr	r0, [r3]
+ 639 0066 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 640              	.LVL61:
+ 135:mylib/soft_i2c.c ****   I2C_delay();
+ 641              		.loc 1 135 3 view .LVU125
+ 642 006a FFF7FEFF 		bl	I2C_delay
+ 643              	.LVL62:
+ 136:mylib/soft_i2c.c **** }
+ 644              		.loc 1 136 1 is_stmt 0 view .LVU126
+ 645 006e 38BD     		pop	{r3, r4, r5, pc}
+ 646              	.LVL63:
+ 647              	.L42:
+ 648              		.loc 1 136 1 view .LVU127
+ 649              		.align	2
+ 650              	.L41:
+ 651 0070 00000000 		.word	.LANCHOR2
+ 652 0074 00000000 		.word	.LANCHOR1
+ 653 0078 00000000 		.word	.LANCHOR3
+ 654 007c 00000000 		.word	.LANCHOR0
+ 655              		.cfi_endproc
+ 656              	.LFE136:
+ 658              		.section	.text.I2C_ReadByte,"ax",%progbits
+ 659              		.align	1
+ 660              		.global	I2C_ReadByte
+ 661              		.syntax unified
+ 662              		.thumb
+ 663              		.thumb_func
+ 664              		.fpu fpv4-sp-d16
+ 666              	I2C_ReadByte:
+ 667              	.LVL64:
+ 668              	.LFB137:
+ 137:mylib/soft_i2c.c **** 
+ 138:mylib/soft_i2c.c **** uint8_t I2C_ReadByte(uint8_t ack)
+ 139:mylib/soft_i2c.c **** {
+ 669              		.loc 1 139 1 is_stmt 1 view -0
+ 670              		.cfi_startproc
+ 671              		@ args = 0, pretend = 0, frame = 0
+ 672              		@ frame_needed = 0, uses_anonymous_args = 0
+ 673              		.loc 1 139 1 is_stmt 0 view .LVU129
+ 674 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 675              	.LCFI8:
+ 676              		.cfi_def_cfa_offset 24
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 16
+
+
+ 677              		.cfi_offset 4, -24
+ 678              		.cfi_offset 5, -20
+ 679              		.cfi_offset 6, -16
+ 680              		.cfi_offset 7, -12
+ 681              		.cfi_offset 8, -8
+ 682              		.cfi_offset 14, -4
+ 683 0004 8046     		mov	r8, r0
+ 140:mylib/soft_i2c.c ****   uint8_t cnt;
+ 684              		.loc 1 140 3 is_stmt 1 view .LVU130
+ 141:mylib/soft_i2c.c ****   uint16_t data=0;
+ 685              		.loc 1 141 3 view .LVU131
+ 686              	.LVL65:
+ 142:mylib/soft_i2c.c **** 	
+ 143:mylib/soft_i2c.c ****   for(cnt=0; cnt<8; cnt++){
+ 687              		.loc 1 143 3 view .LVU132
+ 141:mylib/soft_i2c.c ****   uint16_t data=0;
+ 688              		.loc 1 141 12 is_stmt 0 view .LVU133
+ 689 0006 0024     		movs	r4, #0
+ 690              		.loc 1 143 10 view .LVU134
+ 691 0008 2546     		mov	r5, r4
+ 692              		.loc 1 143 3 view .LVU135
+ 693 000a 03E0     		b	.L44
+ 694              	.LVL66:
+ 695              	.L45:
+ 144:mylib/soft_i2c.c ****     SCL_L();                                
+ 145:mylib/soft_i2c.c ****     I2C_delay();
+ 146:mylib/soft_i2c.c **** 		
+ 147:mylib/soft_i2c.c ****     SCL_H();                             
+ 148:mylib/soft_i2c.c ****     data <<= 1;
+ 149:mylib/soft_i2c.c ****     if(SDA_Read())
+ 150:mylib/soft_i2c.c ****     {
+ 151:mylib/soft_i2c.c ****       data |= 0x01;                              
+ 152:mylib/soft_i2c.c ****     }
+ 153:mylib/soft_i2c.c ****     I2C_delay();
+ 696              		.loc 1 153 5 is_stmt 1 discriminator 2 view .LVU136
+ 697 000c FFF7FEFF 		bl	I2C_delay
+ 698              	.LVL67:
+ 143:mylib/soft_i2c.c ****     SCL_L();                                
+ 699              		.loc 1 143 21 discriminator 2 view .LVU137
+ 143:mylib/soft_i2c.c ****     SCL_L();                                
+ 700              		.loc 1 143 24 is_stmt 0 discriminator 2 view .LVU138
+ 701 0010 0135     		adds	r5, r5, #1
+ 702              	.LVL68:
+ 143:mylib/soft_i2c.c ****     SCL_L();                                
+ 703              		.loc 1 143 24 discriminator 2 view .LVU139
+ 704 0012 EDB2     		uxtb	r5, r5
+ 705              	.LVL69:
+ 706              	.L44:
+ 143:mylib/soft_i2c.c ****     SCL_L();                                
+ 707              		.loc 1 143 14 is_stmt 1 discriminator 1 view .LVU140
+ 143:mylib/soft_i2c.c ****     SCL_L();                                
+ 708              		.loc 1 143 3 is_stmt 0 discriminator 1 view .LVU141
+ 709 0014 072D     		cmp	r5, #7
+ 710 0016 1AD8     		bhi	.L50
+ 144:mylib/soft_i2c.c ****     SCL_L();                                
+ 711              		.loc 1 144 5 is_stmt 1 view .LVU142
+ 712 0018 124F     		ldr	r7, .L52
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 17
+
+
+ 713 001a 134E     		ldr	r6, .L52+4
+ 714 001c 0022     		movs	r2, #0
+ 715 001e 3988     		ldrh	r1, [r7]
+ 716 0020 3068     		ldr	r0, [r6]
+ 717 0022 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 718              	.LVL70:
+ 145:mylib/soft_i2c.c **** 		
+ 719              		.loc 1 145 5 view .LVU143
+ 720 0026 FFF7FEFF 		bl	I2C_delay
+ 721              	.LVL71:
+ 147:mylib/soft_i2c.c ****     data <<= 1;
+ 722              		.loc 1 147 5 view .LVU144
+ 723 002a 0122     		movs	r2, #1
+ 724 002c 3988     		ldrh	r1, [r7]
+ 725 002e 3068     		ldr	r0, [r6]
+ 726 0030 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 727              	.LVL72:
+ 148:mylib/soft_i2c.c ****     if(SDA_Read())
+ 728              		.loc 1 148 5 view .LVU145
+ 148:mylib/soft_i2c.c ****     if(SDA_Read())
+ 729              		.loc 1 148 10 is_stmt 0 view .LVU146
+ 730 0034 6400     		lsls	r4, r4, #1
+ 731              	.LVL73:
+ 148:mylib/soft_i2c.c ****     if(SDA_Read())
+ 732              		.loc 1 148 10 view .LVU147
+ 733 0036 A4B2     		uxth	r4, r4
+ 734              	.LVL74:
+ 149:mylib/soft_i2c.c ****     {
+ 735              		.loc 1 149 5 is_stmt 1 view .LVU148
+ 149:mylib/soft_i2c.c ****     {
+ 736              		.loc 1 149 8 is_stmt 0 view .LVU149
+ 737 0038 0C4B     		ldr	r3, .L52+8
+ 738 003a 1988     		ldrh	r1, [r3]
+ 739 003c 0C4B     		ldr	r3, .L52+12
+ 740 003e 1868     		ldr	r0, [r3]
+ 741 0040 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 742              	.LVL75:
+ 149:mylib/soft_i2c.c ****     {
+ 743              		.loc 1 149 7 view .LVU150
+ 744 0044 0028     		cmp	r0, #0
+ 745 0046 E1D0     		beq	.L45
+ 151:mylib/soft_i2c.c ****     }
+ 746              		.loc 1 151 7 is_stmt 1 view .LVU151
+ 151:mylib/soft_i2c.c ****     }
+ 747              		.loc 1 151 12 is_stmt 0 view .LVU152
+ 748 0048 44F00104 		orr	r4, r4, #1
+ 749              	.LVL76:
+ 151:mylib/soft_i2c.c ****     }
+ 750              		.loc 1 151 12 view .LVU153
+ 751 004c DEE7     		b	.L45
+ 752              	.L50:
+ 154:mylib/soft_i2c.c ****   }
+ 155:mylib/soft_i2c.c ****   if(ack == 1){
+ 753              		.loc 1 155 3 is_stmt 1 view .LVU154
+ 754              		.loc 1 155 5 is_stmt 0 view .LVU155
+ 755 004e B8F1010F 		cmp	r8, #1
+ 756 0052 04D0     		beq	.L51
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 18
+
+
+ 156:mylib/soft_i2c.c ****      I2C_Ack();
+ 157:mylib/soft_i2c.c ****   }
+ 158:mylib/soft_i2c.c ****   else
+ 159:mylib/soft_i2c.c ****   {
+ 160:mylib/soft_i2c.c ****      I2C_NoAck();
+ 757              		.loc 1 160 6 is_stmt 1 view .LVU156
+ 758 0054 FFF7FEFF 		bl	I2C_NoAck
+ 759              	.LVL77:
+ 760              	.L48:
+ 161:mylib/soft_i2c.c ****   }
+ 162:mylib/soft_i2c.c ****   return data;                                  
+ 761              		.loc 1 162 3 view .LVU157
+ 163:mylib/soft_i2c.c **** }
+ 762              		.loc 1 163 1 is_stmt 0 view .LVU158
+ 763 0058 E0B2     		uxtb	r0, r4
+ 764 005a BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 765              	.LVL78:
+ 766              	.L51:
+ 156:mylib/soft_i2c.c ****      I2C_Ack();
+ 767              		.loc 1 156 6 is_stmt 1 view .LVU159
+ 768 005e FFF7FEFF 		bl	I2C_Ack
+ 769              	.LVL79:
+ 770 0062 F9E7     		b	.L48
+ 771              	.L53:
+ 772              		.align	2
+ 773              	.L52:
+ 774 0064 00000000 		.word	.LANCHOR3
+ 775 0068 00000000 		.word	.LANCHOR0
+ 776 006c 00000000 		.word	.LANCHOR2
+ 777 0070 00000000 		.word	.LANCHOR1
+ 778              		.cfi_endproc
+ 779              	.LFE137:
+ 781              		.section	.text.I2C_Stop,"ax",%progbits
+ 782              		.align	1
+ 783              		.global	I2C_Stop
+ 784              		.syntax unified
+ 785              		.thumb
+ 786              		.thumb_func
+ 787              		.fpu fpv4-sp-d16
+ 789              	I2C_Stop:
+ 790              	.LFB138:
+ 164:mylib/soft_i2c.c **** 
+ 165:mylib/soft_i2c.c **** void I2C_Stop(void)
+ 166:mylib/soft_i2c.c **** {
+ 791              		.loc 1 166 1 view -0
+ 792              		.cfi_startproc
+ 793              		@ args = 0, pretend = 0, frame = 0
+ 794              		@ frame_needed = 0, uses_anonymous_args = 0
+ 795 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 796              	.LCFI9:
+ 797              		.cfi_def_cfa_offset 24
+ 798              		.cfi_offset 3, -24
+ 799              		.cfi_offset 4, -20
+ 800              		.cfi_offset 5, -16
+ 801              		.cfi_offset 6, -12
+ 802              		.cfi_offset 7, -8
+ 803              		.cfi_offset 14, -4
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 19
+
+
+ 167:mylib/soft_i2c.c **** 	SCL_L();
+ 804              		.loc 1 167 2 view .LVU161
+ 805 0002 0E4F     		ldr	r7, .L56
+ 806 0004 0E4E     		ldr	r6, .L56+4
+ 807 0006 0022     		movs	r2, #0
+ 808 0008 3988     		ldrh	r1, [r7]
+ 809 000a 3068     		ldr	r0, [r6]
+ 810 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 811              	.LVL80:
+ 168:mylib/soft_i2c.c **** 	SDA_L();	
+ 812              		.loc 1 168 2 view .LVU162
+ 813 0010 0C4D     		ldr	r5, .L56+8
+ 814 0012 0D4C     		ldr	r4, .L56+12
+ 815 0014 0022     		movs	r2, #0
+ 816 0016 2988     		ldrh	r1, [r5]
+ 817 0018 2068     		ldr	r0, [r4]
+ 818 001a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 819              	.LVL81:
+ 169:mylib/soft_i2c.c **** 	SCL_H();
+ 820              		.loc 1 169 2 view .LVU163
+ 821 001e 0122     		movs	r2, #1
+ 822 0020 3988     		ldrh	r1, [r7]
+ 823 0022 3068     		ldr	r0, [r6]
+ 824 0024 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 825              	.LVL82:
+ 170:mylib/soft_i2c.c **** 	I2C_delay();
+ 826              		.loc 1 170 2 view .LVU164
+ 827 0028 FFF7FEFF 		bl	I2C_delay
+ 828              	.LVL83:
+ 171:mylib/soft_i2c.c **** 	SDA_H();
+ 829              		.loc 1 171 2 view .LVU165
+ 830 002c 0122     		movs	r2, #1
+ 831 002e 2988     		ldrh	r1, [r5]
+ 832 0030 2068     		ldr	r0, [r4]
+ 833 0032 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 834              	.LVL84:
+ 172:mylib/soft_i2c.c **** 	I2C_delay();
+ 835              		.loc 1 172 2 view .LVU166
+ 836 0036 FFF7FEFF 		bl	I2C_delay
+ 837              	.LVL85:
+ 173:mylib/soft_i2c.c **** }
+ 838              		.loc 1 173 1 is_stmt 0 view .LVU167
+ 839 003a F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 840              	.L57:
+ 841              		.align	2
+ 842              	.L56:
+ 843 003c 00000000 		.word	.LANCHOR3
+ 844 0040 00000000 		.word	.LANCHOR0
+ 845 0044 00000000 		.word	.LANCHOR2
+ 846 0048 00000000 		.word	.LANCHOR1
+ 847              		.cfi_endproc
+ 848              	.LFE138:
+ 850              		.section	.text.I2C_Write_Buffer,"ax",%progbits
+ 851              		.align	1
+ 852              		.global	I2C_Write_Buffer
+ 853              		.syntax unified
+ 854              		.thumb
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 20
+
+
+ 855              		.thumb_func
+ 856              		.fpu fpv4-sp-d16
+ 858              	I2C_Write_Buffer:
+ 859              	.LVL86:
+ 860              	.LFB139:
+ 174:mylib/soft_i2c.c **** 
+ 175:mylib/soft_i2c.c **** uint8_t I2C_Write_Buffer(uint8_t slaveAddr, uint8_t writeAddr, uint8_t *pBuffer,uint16_t len){
+ 861              		.loc 1 175 94 is_stmt 1 view -0
+ 862              		.cfi_startproc
+ 863              		@ args = 0, pretend = 0, frame = 0
+ 864              		@ frame_needed = 0, uses_anonymous_args = 0
+ 865              		.loc 1 175 94 is_stmt 0 view .LVU169
+ 866 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 867              	.LCFI10:
+ 868              		.cfi_def_cfa_offset 24
+ 869              		.cfi_offset 4, -24
+ 870              		.cfi_offset 5, -20
+ 871              		.cfi_offset 6, -16
+ 872              		.cfi_offset 7, -12
+ 873              		.cfi_offset 8, -8
+ 874              		.cfi_offset 14, -4
+ 875 0004 0446     		mov	r4, r0
+ 876 0006 0F46     		mov	r7, r1
+ 877 0008 9046     		mov	r8, r2
+ 878 000a 1E46     		mov	r6, r3
+ 176:mylib/soft_i2c.c ****     uint8_t * data;
+ 879              		.loc 1 176 5 is_stmt 1 view .LVU170
+ 177:mylib/soft_i2c.c ****     uint8_t result;
+ 880              		.loc 1 177 5 view .LVU171
+ 178:mylib/soft_i2c.c ****     data=(uint8_t *)malloc((len+1)*sizeof(uint8_t));
+ 881              		.loc 1 178 5 view .LVU172
+ 882              		.loc 1 178 21 is_stmt 0 view .LVU173
+ 883 000c 581C     		adds	r0, r3, #1
+ 884              	.LVL87:
+ 885              		.loc 1 178 21 view .LVU174
+ 886 000e FFF7FEFF 		bl	malloc
+ 887              	.LVL88:
+ 888              		.loc 1 178 21 view .LVU175
+ 889 0012 0546     		mov	r5, r0
+ 890              	.LVL89:
+ 179:mylib/soft_i2c.c ****     memcpy(data+1,pBuffer,len);
+ 891              		.loc 1 179 5 is_stmt 1 view .LVU176
+ 892 0014 3246     		mov	r2, r6
+ 893 0016 4146     		mov	r1, r8
+ 894 0018 0130     		adds	r0, r0, #1
+ 895              	.LVL90:
+ 896              		.loc 1 179 5 is_stmt 0 view .LVU177
+ 897 001a FFF7FEFF 		bl	memcpy
+ 898              	.LVL91:
+ 180:mylib/soft_i2c.c ****     data[0]=writeAddr;
+ 899              		.loc 1 180 5 is_stmt 1 view .LVU178
+ 900              		.loc 1 180 12 is_stmt 0 view .LVU179
+ 901 001e 2F70     		strb	r7, [r5]
+ 181:mylib/soft_i2c.c **** 
+ 182:mylib/soft_i2c.c ****     I2C_Start();
+ 902              		.loc 1 182 5 is_stmt 1 view .LVU180
+ 903 0020 FFF7FEFF 		bl	I2C_Start
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 21
+
+
+ 904              	.LVL92:
+ 183:mylib/soft_i2c.c ****     I2C_SendByte(slaveAddr);
+ 905              		.loc 1 183 5 view .LVU181
+ 906 0024 2046     		mov	r0, r4
+ 907 0026 FFF7FEFF 		bl	I2C_SendByte
+ 908              	.LVL93:
+ 184:mylib/soft_i2c.c ****     I2C_GetAck();
+ 909              		.loc 1 184 5 view .LVU182
+ 910 002a FFF7FEFF 		bl	I2C_GetAck
+ 911              	.LVL94:
+ 185:mylib/soft_i2c.c ****     for(int i=0;i<len+1;++i){
+ 912              		.loc 1 185 5 view .LVU183
+ 913              	.LBB3:
+ 914              		.loc 1 185 9 view .LVU184
+ 915              		.loc 1 185 13 is_stmt 0 view .LVU185
+ 916 002e 0024     		movs	r4, #0
+ 917              	.LVL95:
+ 918              	.L59:
+ 919              		.loc 1 185 17 is_stmt 1 discriminator 1 view .LVU186
+ 920              		.loc 1 185 5 is_stmt 0 discriminator 1 view .LVU187
+ 921 0030 A642     		cmp	r6, r4
+ 922 0032 06DB     		blt	.L62
+ 186:mylib/soft_i2c.c ****         I2C_SendByte(data[i]);
+ 923              		.loc 1 186 9 is_stmt 1 discriminator 3 view .LVU188
+ 924 0034 285D     		ldrb	r0, [r5, r4]	@ zero_extendqisi2
+ 925 0036 FFF7FEFF 		bl	I2C_SendByte
+ 926              	.LVL96:
+ 187:mylib/soft_i2c.c ****         I2C_GetAck();
+ 927              		.loc 1 187 9 discriminator 3 view .LVU189
+ 928 003a FFF7FEFF 		bl	I2C_GetAck
+ 929              	.LVL97:
+ 185:mylib/soft_i2c.c ****     for(int i=0;i<len+1;++i){
+ 930              		.loc 1 185 25 discriminator 3 view .LVU190
+ 931 003e 0134     		adds	r4, r4, #1
+ 932              	.LVL98:
+ 185:mylib/soft_i2c.c ****     for(int i=0;i<len+1;++i){
+ 933              		.loc 1 185 25 is_stmt 0 discriminator 3 view .LVU191
+ 934 0040 F6E7     		b	.L59
+ 935              	.L62:
+ 185:mylib/soft_i2c.c ****     for(int i=0;i<len+1;++i){
+ 936              		.loc 1 185 25 discriminator 3 view .LVU192
+ 937              	.LBE3:
+ 188:mylib/soft_i2c.c ****     }
+ 189:mylib/soft_i2c.c ****     I2C_Stop();
+ 938              		.loc 1 189 5 is_stmt 1 view .LVU193
+ 939 0042 FFF7FEFF 		bl	I2C_Stop
+ 940              	.LVL99:
+ 190:mylib/soft_i2c.c ****     free(data);
+ 941              		.loc 1 190 5 view .LVU194
+ 942 0046 2846     		mov	r0, r5
+ 943 0048 FFF7FEFF 		bl	free
+ 944              	.LVL100:
+ 191:mylib/soft_i2c.c ****     return 0;
+ 945              		.loc 1 191 5 view .LVU195
+ 192:mylib/soft_i2c.c **** }
+ 946              		.loc 1 192 1 is_stmt 0 view .LVU196
+ 947 004c 0020     		movs	r0, #0
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 22
+
+
+ 948 004e BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 949              		.loc 1 192 1 view .LVU197
+ 950              		.cfi_endproc
+ 951              	.LFE139:
+ 953              		.section	.text.I2C_Read_Buffer,"ax",%progbits
+ 954              		.align	1
+ 955              		.global	I2C_Read_Buffer
+ 956              		.syntax unified
+ 957              		.thumb
+ 958              		.thumb_func
+ 959              		.fpu fpv4-sp-d16
+ 961              	I2C_Read_Buffer:
+ 962              	.LVL101:
+ 963              	.LFB140:
+ 193:mylib/soft_i2c.c **** 
+ 194:mylib/soft_i2c.c **** 
+ 195:mylib/soft_i2c.c **** uint8_t I2C_Read_Buffer(uint8_t slaveAddr,uint8_t readAddr,uint8_t *pBuffer,uint16_t len){
+ 964              		.loc 1 195 90 is_stmt 1 view -0
+ 965              		.cfi_startproc
+ 966              		@ args = 0, pretend = 0, frame = 0
+ 967              		@ frame_needed = 0, uses_anonymous_args = 0
+ 968              		.loc 1 195 90 is_stmt 0 view .LVU199
+ 969 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 970              	.LCFI11:
+ 971              		.cfi_def_cfa_offset 24
+ 972              		.cfi_offset 3, -24
+ 973              		.cfi_offset 4, -20
+ 974              		.cfi_offset 5, -16
+ 975              		.cfi_offset 6, -12
+ 976              		.cfi_offset 7, -8
+ 977              		.cfi_offset 14, -4
+ 978 0002 0446     		mov	r4, r0
+ 979 0004 0F46     		mov	r7, r1
+ 980 0006 1646     		mov	r6, r2
+ 981 0008 1D46     		mov	r5, r3
+ 196:mylib/soft_i2c.c ****     I2C_Start();
+ 982              		.loc 1 196 5 is_stmt 1 view .LVU200
+ 983 000a FFF7FEFF 		bl	I2C_Start
+ 984              	.LVL102:
+ 197:mylib/soft_i2c.c ****     I2C_SendByte(slaveAddr);
+ 985              		.loc 1 197 5 view .LVU201
+ 986 000e 2046     		mov	r0, r4
+ 987 0010 FFF7FEFF 		bl	I2C_SendByte
+ 988              	.LVL103:
+ 198:mylib/soft_i2c.c ****     I2C_GetAck();
+ 989              		.loc 1 198 5 view .LVU202
+ 990 0014 FFF7FEFF 		bl	I2C_GetAck
+ 991              	.LVL104:
+ 199:mylib/soft_i2c.c ****     I2C_SendByte(readAddr);
+ 992              		.loc 1 199 5 view .LVU203
+ 993 0018 3846     		mov	r0, r7
+ 994 001a FFF7FEFF 		bl	I2C_SendByte
+ 995              	.LVL105:
+ 200:mylib/soft_i2c.c ****     I2C_GetAck();
+ 996              		.loc 1 200 5 view .LVU204
+ 997 001e FFF7FEFF 		bl	I2C_GetAck
+ 998              	.LVL106:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 23
+
+
+ 201:mylib/soft_i2c.c **** 
+ 202:mylib/soft_i2c.c **** 
+ 203:mylib/soft_i2c.c ****     I2C_Start();
+ 999              		.loc 1 203 5 view .LVU205
+ 1000 0022 FFF7FEFF 		bl	I2C_Start
+ 1001              	.LVL107:
+ 204:mylib/soft_i2c.c ****     I2C_SendByte(slaveAddr|1);
+ 1002              		.loc 1 204 5 view .LVU206
+ 1003 0026 44F00100 		orr	r0, r4, #1
+ 1004 002a FFF7FEFF 		bl	I2C_SendByte
+ 1005              	.LVL108:
+ 205:mylib/soft_i2c.c ****     I2C_GetAck();
+ 1006              		.loc 1 205 5 view .LVU207
+ 1007 002e FFF7FEFF 		bl	I2C_GetAck
+ 1008              	.LVL109:
+ 206:mylib/soft_i2c.c **** 
+ 207:mylib/soft_i2c.c ****     for(int i=0;i<len;++i){
+ 1009              		.loc 1 207 5 view .LVU208
+ 1010              	.LBB4:
+ 1011              		.loc 1 207 9 view .LVU209
+ 1012              		.loc 1 207 13 is_stmt 0 view .LVU210
+ 1013 0032 0024     		movs	r4, #0
+ 1014              		.loc 1 207 5 view .LVU211
+ 1015 0034 04E0     		b	.L64
+ 1016              	.LVL110:
+ 1017              	.L70:
+ 208:mylib/soft_i2c.c ****         if(i!=len-1)
+ 209:mylib/soft_i2c.c ****             pBuffer[i] = I2C_ReadByte(1);
+ 1018              		.loc 1 209 13 is_stmt 1 view .LVU212
+ 1019              		.loc 1 209 26 is_stmt 0 view .LVU213
+ 1020 0036 0120     		movs	r0, #1
+ 1021 0038 FFF7FEFF 		bl	I2C_ReadByte
+ 1022              	.LVL111:
+ 1023              		.loc 1 209 24 view .LVU214
+ 1024 003c 3055     		strb	r0, [r6, r4]
+ 1025              	.L66:
+ 207:mylib/soft_i2c.c ****         if(i!=len-1)
+ 1026              		.loc 1 207 23 is_stmt 1 discriminator 2 view .LVU215
+ 1027 003e 0134     		adds	r4, r4, #1
+ 1028              	.LVL112:
+ 1029              	.L64:
+ 207:mylib/soft_i2c.c ****         if(i!=len-1)
+ 1030              		.loc 1 207 17 discriminator 1 view .LVU216
+ 207:mylib/soft_i2c.c ****         if(i!=len-1)
+ 1031              		.loc 1 207 5 is_stmt 0 discriminator 1 view .LVU217
+ 1032 0040 A542     		cmp	r5, r4
+ 1033 0042 07DD     		ble	.L69
+ 208:mylib/soft_i2c.c ****         if(i!=len-1)
+ 1034              		.loc 1 208 9 is_stmt 1 view .LVU218
+ 208:mylib/soft_i2c.c ****         if(i!=len-1)
+ 1035              		.loc 1 208 18 is_stmt 0 view .LVU219
+ 1036 0044 6B1E     		subs	r3, r5, #1
+ 208:mylib/soft_i2c.c ****         if(i!=len-1)
+ 1037              		.loc 1 208 11 view .LVU220
+ 1038 0046 A342     		cmp	r3, r4
+ 1039 0048 F5D1     		bne	.L70
+ 210:mylib/soft_i2c.c ****         else{
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 24
+
+
+ 211:mylib/soft_i2c.c ****            pBuffer[i] = I2C_ReadByte(0); 
+ 1040              		.loc 1 211 12 is_stmt 1 view .LVU221
+ 1041              		.loc 1 211 25 is_stmt 0 view .LVU222
+ 1042 004a 0020     		movs	r0, #0
+ 1043 004c FFF7FEFF 		bl	I2C_ReadByte
+ 1044              	.LVL113:
+ 1045              		.loc 1 211 23 view .LVU223
+ 1046 0050 3055     		strb	r0, [r6, r4]
+ 1047 0052 F4E7     		b	.L66
+ 1048              	.L69:
+ 1049              		.loc 1 211 23 view .LVU224
+ 1050              	.LBE4:
+ 212:mylib/soft_i2c.c ****         }
+ 213:mylib/soft_i2c.c ****     }
+ 214:mylib/soft_i2c.c ****     I2C_Stop();
+ 1051              		.loc 1 214 5 is_stmt 1 view .LVU225
+ 1052 0054 FFF7FEFF 		bl	I2C_Stop
+ 1053              	.LVL114:
+ 215:mylib/soft_i2c.c ****     return 0;
+ 1054              		.loc 1 215 5 view .LVU226
+ 216:mylib/soft_i2c.c **** }
+ 1055              		.loc 1 216 1 is_stmt 0 view .LVU227
+ 1056 0058 0020     		movs	r0, #0
+ 1057 005a F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 1058              		.loc 1 216 1 view .LVU228
+ 1059              		.cfi_endproc
+ 1060              	.LFE140:
+ 1062              		.section	.text.I2C_Reset,"ax",%progbits
+ 1063              		.align	1
+ 1064              		.global	I2C_Reset
+ 1065              		.syntax unified
+ 1066              		.thumb
+ 1067              		.thumb_func
+ 1068              		.fpu fpv4-sp-d16
+ 1070              	I2C_Reset:
+ 1071              	.LFB141:
+ 217:mylib/soft_i2c.c **** 
+ 218:mylib/soft_i2c.c **** void I2C_Reset(void){
+ 1072              		.loc 1 218 21 is_stmt 1 view -0
+ 1073              		.cfi_startproc
+ 1074              		@ args = 0, pretend = 0, frame = 0
+ 1075              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1076              		@ link register save eliminated.
+ 219:mylib/soft_i2c.c **** 
+ 220:mylib/soft_i2c.c **** }...
+ 1077              		.loc 1 220 1 view .LVU230
+ 1078 0000 7047     		bx	lr
+ 1079              		.cfi_endproc
+ 1080              	.LFE141:
+ 1082              		.section	.bss.SCL_Pin,"aw",%nobits
+ 1083              		.align	1
+ 1084              		.set	.LANCHOR3,. + 0
+ 1087              	SCL_Pin:
+ 1088 0000 0000     		.space	2
+ 1089              		.section	.bss.SCL_Port,"aw",%nobits
+ 1090              		.align	2
+ 1091              		.set	.LANCHOR0,. + 0
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 25
+
+
+ 1094              	SCL_Port:
+ 1095 0000 00000000 		.space	4
+ 1096              		.section	.bss.SDA_Pin,"aw",%nobits
+ 1097              		.align	1
+ 1098              		.set	.LANCHOR2,. + 0
+ 1101              	SDA_Pin:
+ 1102 0000 0000     		.space	2
+ 1103              		.section	.bss.SDA_Port,"aw",%nobits
+ 1104              		.align	2
+ 1105              		.set	.LANCHOR1,. + 0
+ 1108              	SDA_Port:
+ 1109 0000 00000000 		.space	4
+ 1110              		.text
+ 1111              	.Letext0:
+ 1112              		.file 2 "c:\\arm_gcc\\arm-none-eabi\\include\\machine\\_default_types.h"
+ 1113              		.file 3 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 1114              		.file 4 "Drivers/CMSIS/Include/core_cm4.h"
+ 1115              		.file 5 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h"
+ 1116              		.file 6 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f405xx.h"
+ 1117              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h"
+ 1118              		.file 8 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
+ 1119              		.file 9 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
+ 1120              		.file 10 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\lock.h"
+ 1121              		.file 11 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\_types.h"
+ 1122              		.file 12 "c:\\arm_gcc\\lib\\gcc\\arm-none-eabi\\9.2.1\\include\\stddef.h"
+ 1123              		.file 13 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\reent.h"
+ 1124              		.file 14 "c:\\arm_gcc\\arm-none-eabi\\include\\stdlib.h"
+ 1125              		.file 15 "<built-in>"
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s 			page 26
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 soft_i2c.c
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:18     .text.Soft_I2C_Init:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:26     .text.Soft_I2C_Init:00000000 Soft_I2C_Init
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:129    .text.Soft_I2C_Init:00000068 $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:137    .text.I2C_delay:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:144    .text.I2C_delay:00000000 I2C_delay
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:183    .text.I2C_Ack:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:189    .text.I2C_Ack:00000000 I2C_Ack
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:255    .text.I2C_Ack:00000050 $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:263    .text.I2C_NoAck:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:269    .text.I2C_NoAck:00000000 I2C_NoAck
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:324    .text.I2C_NoAck:00000040 $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:332    .text.I2C_Start:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:339    .text.I2C_Start:00000000 I2C_Start
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:421    .text.I2C_Start:00000060 $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:429    .text.I2C_GetAck:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:436    .text.I2C_GetAck:00000000 I2C_GetAck
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:529    .text.I2C_GetAck:00000064 $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:537    .text.I2C_SendByte:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:544    .text.I2C_SendByte:00000000 I2C_SendByte
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:651    .text.I2C_SendByte:00000070 $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:659    .text.I2C_ReadByte:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:666    .text.I2C_ReadByte:00000000 I2C_ReadByte
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:774    .text.I2C_ReadByte:00000064 $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:782    .text.I2C_Stop:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:789    .text.I2C_Stop:00000000 I2C_Stop
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:843    .text.I2C_Stop:0000003c $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:851    .text.I2C_Write_Buffer:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:858    .text.I2C_Write_Buffer:00000000 I2C_Write_Buffer
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:954    .text.I2C_Read_Buffer:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:961    .text.I2C_Read_Buffer:00000000 I2C_Read_Buffer
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:1063   .text.I2C_Reset:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:1070   .text.I2C_Reset:00000000 I2C_Reset
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:1083   .bss.SCL_Pin:00000000 $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:1087   .bss.SCL_Pin:00000000 SCL_Pin
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:1090   .bss.SCL_Port:00000000 $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:1094   .bss.SCL_Port:00000000 SCL_Port
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:1097   .bss.SDA_Pin:00000000 $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:1101   .bss.SDA_Pin:00000000 SDA_Pin
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:1104   .bss.SDA_Port:00000000 $d
+C:\Users\ncer\AppData\Local\Temp\ccGBtPXS.s:1108   .bss.SDA_Port:00000000 SDA_Port
+
+UNDEFINED SYMBOLS
+HAL_GPIO_WritePin
+HAL_GPIO_Init
+HAL_GPIO_ReadPin
+malloc
+memcpy
+free

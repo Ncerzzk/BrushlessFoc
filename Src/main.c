@@ -37,6 +37,15 @@
 #include "foc.h"
 #include "parameter.h"
 #include "dac.h"
+#include "utils.h"
+
+#ifdef USE_GYRO
+#include "soft_i2c.h"
+#include "icm20600.h"
+#include "easy_angle.h"
+
+void Angle_Control();
+#endif
 //#include "sing.h"
 /* USER CODE END Includes */
 
@@ -44,6 +53,9 @@
 /* USER CODE BEGIN PTD */
 extern uint32_t cnt;
 extern const uint8_t voice[];
+uint8_t Init_OK=0;
+uint8_t Ms_5_Flag=0;
+void Angle_Handler();
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -115,7 +127,7 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
   debug_uart_init(&huart5,DMA,DMA);
- 
+  uprintf_polling("hello,world!\r\n");
   Read_Parameters(1);
 
   #ifdef ENCODER_SOFT_SPI
@@ -126,9 +138,16 @@ int main(void)
   #endif
   Foc_Init();
 
+
+  #ifdef USE_GYRO
+  Soft_I2C_Init(SOFT_I2C_SCL_PORT,SOFT_I2C_SCL_PIN,SOFT_I2C_SDA_PORT,SOFT_I2C_SDA_PIN);
+  MPU9250_Init(&MPU9250); 
+  #endif
+
   //Song_Init(&htim7,5000,0.3f,voice,297973);
 
   uprintf_polling("hello,world2!\r\n");
+  Init_OK=1;
 
   //
 
@@ -143,6 +162,14 @@ int main(void)
     if(buffer_rx_OK){
       UART_Command_Analize_And_Call();
     }
+    
+#ifdef USE_GYRO
+    if(Ms_5_Flag){
+      Ms_5_Flag=0;
+      Angle_Handler(); 
+      Angle_Control();
+    }
+#endif
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -191,7 +218,70 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+#ifdef USE_GYRO
+#include "math.h"
+void Ms_Handler(){
+  static uint32_t ms_cnt;
 
+  if(!Init_OK){
+    return ;
+  }
+
+  ms_cnt++;
+  if(ms_cnt%5==0){
+    Ms_5_Flag=1;
+  }
+
+  if(ms_cnt==50000){
+    ms_cnt=0;
+  }
+}
+
+float angle[3]={0};
+void Angle_Handler(){
+  int16_t gy[3],ac[3];
+  float angle_speed[3];
+  float ac_angle[3];
+  MPU_Read6500(&MPU9250,ac,gy);
+  Gyroraw_to_Angle_Speed(&MPU9250,gy,angle_speed);
+  get_angle(ac,angle_speed,angle,ac_angle);
+  //send_wave(angle[0],angle[1],angle[2],ac_angle[1]);
+}
+
+PID_S Angle_PID ={
+    .KP=0.02,
+    .KD=0,
+    .KI=0,
+    .I_TIME=0.005f,
+    .i_max = __FLT_MAX__,
+    .I_ERR_LIMIT = 5.0f
+};
+// angle[1] 往前低头>90
+
+// phi = 0 时，力矩向前低头
+float Target_Angle=90;
+void Angle_Control(){
+  float out=0;
+  float abs_out=0;
+  out=PID_Control(&Angle_PID,Target_Angle,angle[1]);
+  // 当往前低头，angle[1]=120
+  // 此时 target - now 为 负数
+  // PID值为正数
+  // 则out = 负数
+  if(out>0){
+    Phi = 0;
+  }else{
+    Phi = 180;
+  }
+  abs_out=fabsf(out);
+  if(abs_out>0.5f){
+    abs_out=0.5f;
+  }
+  Duty_Amp =Base_Duty* abs_out;
+  if(Wave_Flag)
+    send_wave(angle[1],0,Duty_Amp*1000,0);
+}
+#endif
 
 /* USER CODE END 4 */
 

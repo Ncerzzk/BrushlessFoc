@@ -1,0 +1,1333 @@
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"icm20600.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.mpu_write_byte,"ax",%progbits
+  18              		.align	1
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	mpu_write_byte:
+  26              	.LVL0:
+  27              	.LFB130:
+  28              		.file 1 "mylib/icm20600.c"
+   1:mylib/icm20600.c **** #include "icm20600.h"
+   2:mylib/icm20600.c **** //#include "usart.h"
+   3:mylib/icm20600.c **** //#include "i2c.h"
+   4:mylib/icm20600.c **** #include "main.h"
+   5:mylib/icm20600.c **** 
+   6:mylib/icm20600.c **** MPU_Dev MPU9250;
+   7:mylib/icm20600.c **** MPU_Setting MPU9250_Setting;
+   8:mylib/icm20600.c **** 
+   9:mylib/icm20600.c **** /*
+  10:mylib/icm20600.c **** 下面几个个函数需用户自己实现。
+  11:mylib/icm20600.c **** */
+  12:mylib/icm20600.c **** uint8_t I2C_Write_Buffer(uint8_t slaveAddr, uint8_t writeAddr, uint8_t *pBuffer,uint16_t len);
+  13:mylib/icm20600.c **** uint8_t I2C_Read_Buffer(uint8_t slaveAddr,uint8_t readAddr,uint8_t *pBuffer,uint16_t len);
+  14:mylib/icm20600.c **** void I2C_Reset(void);
+  15:mylib/icm20600.c **** extern void Delay_Us(uint32_t nus);
+  16:mylib/icm20600.c **** 
+  17:mylib/icm20600.c **** 
+  18:mylib/icm20600.c **** 
+  19:mylib/icm20600.c **** void mpu_error_deal(MPU_Dev *dev);
+  20:mylib/icm20600.c **** inline void mpu_error_deal(MPU_Dev *dev);
+  21:mylib/icm20600.c **** void I2C_Error_Check(MPU_Dev *dev,uint8_t i2c_result);
+  22:mylib/icm20600.c **** 
+  23:mylib/icm20600.c **** static void mpu_write_byte(MPU_Dev *dev,uint8_t write_addr,uint8_t data){
+  29              		.loc 1 23 73 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 8
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 23 73 is_stmt 0 view .LVU1
+  34 0000 30B5     		push	{r4, r5, lr}
+  35              	.LCFI0:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 2
+
+
+  36              		.cfi_def_cfa_offset 12
+  37              		.cfi_offset 4, -12
+  38              		.cfi_offset 5, -8
+  39              		.cfi_offset 14, -4
+  40 0002 83B0     		sub	sp, sp, #12
+  41              	.LCFI1:
+  42              		.cfi_def_cfa_offset 24
+  43 0004 0446     		mov	r4, r0
+  44 0006 8DF80720 		strb	r2, [sp, #7]
+  24:mylib/icm20600.c ****   if(dev->i2c_write_buffer(dev->dev_addr,write_addr,&data,1)!=dev->I2C_OK){
+  45              		.loc 1 24 3 is_stmt 1 view .LVU2
+  46              		.loc 1 24 9 is_stmt 0 view .LVU3
+  47 000a 0568     		ldr	r5, [r0]
+  48              		.loc 1 24 6 view .LVU4
+  49 000c 0123     		movs	r3, #1
+  50 000e 0DF10702 		add	r2, sp, #7
+  51              	.LVL1:
+  52              		.loc 1 24 6 view .LVU5
+  53 0012 007D     		ldrb	r0, [r0, #20]	@ zero_extendqisi2
+  54              	.LVL2:
+  55              		.loc 1 24 6 view .LVU6
+  56 0014 A847     		blx	r5
+  57              	.LVL3:
+  58              		.loc 1 24 66 view .LVU7
+  59 0016 E37D     		ldrb	r3, [r4, #23]	@ zero_extendqisi2
+  60              		.loc 1 24 5 view .LVU8
+  61 0018 9842     		cmp	r0, r3
+  62 001a 09D0     		beq	.L1
+  25:mylib/icm20600.c ****     mpu_error_deal(dev);
+  63              		.loc 1 25 5 is_stmt 1 view .LVU9
+  64              	.LVL4:
+  65              	.LBB16:
+  66              	.LBI16:
+  26:mylib/icm20600.c ****   }
+  27:mylib/icm20600.c **** }
+  28:mylib/icm20600.c **** 
+  29:mylib/icm20600.c **** inline void mpu_error_deal(MPU_Dev *dev){
+  67              		.loc 1 29 13 view .LVU10
+  68              	.LBB17:
+  30:mylib/icm20600.c ****   dev->i2c_error_count++;
+  69              		.loc 1 30 3 view .LVU11
+  70              		.loc 1 30 6 is_stmt 0 view .LVU12
+  71 001c 238B     		ldrh	r3, [r4, #24]
+  72              		.loc 1 30 23 view .LVU13
+  73 001e 0133     		adds	r3, r3, #1
+  74 0020 9BB2     		uxth	r3, r3
+  75 0022 2383     		strh	r3, [r4, #24]	@ movhi
+  31:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+  76              		.loc 1 31 3 is_stmt 1 view .LVU14
+  77              		.loc 1 31 5 is_stmt 0 view .LVU15
+  78 0024 142B     		cmp	r3, #20
+  79 0026 03D9     		bls	.L1
+  32:mylib/icm20600.c ****     dev->i2c_reset();
+  80              		.loc 1 32 5 is_stmt 1 view .LVU16
+  81              		.loc 1 32 8 is_stmt 0 view .LVU17
+  82 0028 A368     		ldr	r3, [r4, #8]
+  83              		.loc 1 32 5 view .LVU18
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 3
+
+
+  84 002a 9847     		blx	r3
+  85              	.LVL5:
+  33:mylib/icm20600.c ****     dev->i2c_error_count=0;
+  86              		.loc 1 33 5 is_stmt 1 view .LVU19
+  87              		.loc 1 33 25 is_stmt 0 view .LVU20
+  88 002c 0023     		movs	r3, #0
+  89 002e 2383     		strh	r3, [r4, #24]	@ movhi
+  90              	.LVL6:
+  91              	.L1:
+  92              		.loc 1 33 25 view .LVU21
+  93              	.LBE17:
+  94              	.LBE16:
+  27:mylib/icm20600.c **** 
+  95              		.loc 1 27 1 view .LVU22
+  96 0030 03B0     		add	sp, sp, #12
+  97              	.LCFI2:
+  98              		.cfi_def_cfa_offset 12
+  99              		@ sp needed
+ 100 0032 30BD     		pop	{r4, r5, pc}
+  27:mylib/icm20600.c **** 
+ 101              		.loc 1 27 1 view .LVU23
+ 102              		.cfi_endproc
+ 103              	.LFE130:
+ 105              		.section	.text.mpu_read_byte,"ax",%progbits
+ 106              		.align	1
+ 107              		.syntax unified
+ 108              		.thumb
+ 109              		.thumb_func
+ 110              		.fpu fpv4-sp-d16
+ 112              	mpu_read_byte:
+ 113              	.LVL7:
+ 114              	.LFB132:
+  34:mylib/icm20600.c ****   }
+  35:mylib/icm20600.c **** }
+  36:mylib/icm20600.c **** 
+  37:mylib/icm20600.c **** static uint8_t mpu_read_byte(MPU_Dev *dev,uint8_t read_addr){
+ 115              		.loc 1 37 61 is_stmt 1 view -0
+ 116              		.cfi_startproc
+ 117              		@ args = 0, pretend = 0, frame = 8
+ 118              		@ frame_needed = 0, uses_anonymous_args = 0
+ 119              		.loc 1 37 61 is_stmt 0 view .LVU25
+ 120 0000 30B5     		push	{r4, r5, lr}
+ 121              	.LCFI3:
+ 122              		.cfi_def_cfa_offset 12
+ 123              		.cfi_offset 4, -12
+ 124              		.cfi_offset 5, -8
+ 125              		.cfi_offset 14, -4
+ 126 0002 83B0     		sub	sp, sp, #12
+ 127              	.LCFI4:
+ 128              		.cfi_def_cfa_offset 24
+ 129 0004 0446     		mov	r4, r0
+  38:mylib/icm20600.c ****   uint8_t temp=0;
+ 130              		.loc 1 38 3 is_stmt 1 view .LVU26
+ 131              		.loc 1 38 11 is_stmt 0 view .LVU27
+ 132 0006 0023     		movs	r3, #0
+ 133 0008 8DF80730 		strb	r3, [sp, #7]
+  39:mylib/icm20600.c ****   if(dev->i2c_read_buffer(dev->dev_addr,read_addr,&temp,1)!=dev->I2C_OK){
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 4
+
+
+ 134              		.loc 1 39 3 is_stmt 1 view .LVU28
+ 135              		.loc 1 39 9 is_stmt 0 view .LVU29
+ 136 000c 4568     		ldr	r5, [r0, #4]
+ 137              		.loc 1 39 6 view .LVU30
+ 138 000e 0123     		movs	r3, #1
+ 139 0010 0DF10702 		add	r2, sp, #7
+ 140 0014 007D     		ldrb	r0, [r0, #20]	@ zero_extendqisi2
+ 141              	.LVL8:
+ 142              		.loc 1 39 6 view .LVU31
+ 143 0016 A847     		blx	r5
+ 144              	.LVL9:
+ 145              		.loc 1 39 64 view .LVU32
+ 146 0018 E37D     		ldrb	r3, [r4, #23]	@ zero_extendqisi2
+ 147              		.loc 1 39 5 view .LVU33
+ 148 001a 9842     		cmp	r0, r3
+ 149 001c 09D0     		beq	.L5
+  40:mylib/icm20600.c ****     mpu_error_deal(dev);
+ 150              		.loc 1 40 5 is_stmt 1 view .LVU34
+ 151              	.LVL10:
+ 152              	.LBB18:
+ 153              	.LBI18:
+  29:mylib/icm20600.c ****   dev->i2c_error_count++;
+ 154              		.loc 1 29 13 view .LVU35
+ 155              	.LBB19:
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 156              		.loc 1 30 3 view .LVU36
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 157              		.loc 1 30 6 is_stmt 0 view .LVU37
+ 158 001e 238B     		ldrh	r3, [r4, #24]
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 159              		.loc 1 30 23 view .LVU38
+ 160 0020 0133     		adds	r3, r3, #1
+ 161 0022 9BB2     		uxth	r3, r3
+ 162 0024 2383     		strh	r3, [r4, #24]	@ movhi
+  31:mylib/icm20600.c ****     dev->i2c_reset();
+ 163              		.loc 1 31 3 is_stmt 1 view .LVU39
+  31:mylib/icm20600.c ****     dev->i2c_reset();
+ 164              		.loc 1 31 5 is_stmt 0 view .LVU40
+ 165 0026 142B     		cmp	r3, #20
+ 166 0028 03D9     		bls	.L5
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 167              		.loc 1 32 5 is_stmt 1 view .LVU41
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 168              		.loc 1 32 8 is_stmt 0 view .LVU42
+ 169 002a A368     		ldr	r3, [r4, #8]
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 170              		.loc 1 32 5 view .LVU43
+ 171 002c 9847     		blx	r3
+ 172              	.LVL11:
+  33:mylib/icm20600.c ****   }
+ 173              		.loc 1 33 5 is_stmt 1 view .LVU44
+  33:mylib/icm20600.c ****   }
+ 174              		.loc 1 33 25 is_stmt 0 view .LVU45
+ 175 002e 0023     		movs	r3, #0
+ 176 0030 2383     		strh	r3, [r4, #24]	@ movhi
+ 177              	.LVL12:
+ 178              	.L5:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 5
+
+
+  33:mylib/icm20600.c ****   }
+ 179              		.loc 1 33 25 view .LVU46
+ 180              	.LBE19:
+ 181              	.LBE18:
+  41:mylib/icm20600.c ****   }
+  42:mylib/icm20600.c ****   return temp;
+ 182              		.loc 1 42 3 is_stmt 1 view .LVU47
+  43:mylib/icm20600.c **** }
+ 183              		.loc 1 43 1 is_stmt 0 view .LVU48
+ 184 0032 9DF80700 		ldrb	r0, [sp, #7]	@ zero_extendqisi2
+ 185 0036 03B0     		add	sp, sp, #12
+ 186              	.LCFI5:
+ 187              		.cfi_def_cfa_offset 12
+ 188              		@ sp needed
+ 189 0038 30BD     		pop	{r4, r5, pc}
+ 190              		.loc 1 43 1 view .LVU49
+ 191              		.cfi_endproc
+ 192              	.LFE132:
+ 194              		.section	.text.mpu_error_deal,"ax",%progbits
+ 195              		.align	1
+ 196              		.global	mpu_error_deal
+ 197              		.syntax unified
+ 198              		.thumb
+ 199              		.thumb_func
+ 200              		.fpu fpv4-sp-d16
+ 202              	mpu_error_deal:
+ 203              	.LVL13:
+ 204              	.LFB131:
+  29:mylib/icm20600.c ****   dev->i2c_error_count++;
+ 205              		.loc 1 29 41 is_stmt 1 view -0
+ 206              		.cfi_startproc
+ 207              		@ args = 0, pretend = 0, frame = 0
+ 208              		@ frame_needed = 0, uses_anonymous_args = 0
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 209              		.loc 1 30 3 view .LVU51
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 210              		.loc 1 30 6 is_stmt 0 view .LVU52
+ 211 0000 038B     		ldrh	r3, [r0, #24]
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 212              		.loc 1 30 23 view .LVU53
+ 213 0002 0133     		adds	r3, r3, #1
+ 214 0004 9BB2     		uxth	r3, r3
+ 215 0006 0383     		strh	r3, [r0, #24]	@ movhi
+  31:mylib/icm20600.c ****     dev->i2c_reset();
+ 216              		.loc 1 31 3 is_stmt 1 view .LVU54
+  31:mylib/icm20600.c ****     dev->i2c_reset();
+ 217              		.loc 1 31 5 is_stmt 0 view .LVU55
+ 218 0008 142B     		cmp	r3, #20
+ 219 000a 06D9     		bls	.L10
+  29:mylib/icm20600.c ****   dev->i2c_error_count++;
+ 220              		.loc 1 29 41 view .LVU56
+ 221 000c 10B5     		push	{r4, lr}
+ 222              	.LCFI6:
+ 223              		.cfi_def_cfa_offset 8
+ 224              		.cfi_offset 4, -8
+ 225              		.cfi_offset 14, -4
+ 226 000e 0446     		mov	r4, r0
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 6
+
+
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 227              		.loc 1 32 5 is_stmt 1 view .LVU57
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 228              		.loc 1 32 8 is_stmt 0 view .LVU58
+ 229 0010 8368     		ldr	r3, [r0, #8]
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 230              		.loc 1 32 5 view .LVU59
+ 231 0012 9847     		blx	r3
+ 232              	.LVL14:
+  33:mylib/icm20600.c ****   }
+ 233              		.loc 1 33 5 is_stmt 1 view .LVU60
+  33:mylib/icm20600.c ****   }
+ 234              		.loc 1 33 25 is_stmt 0 view .LVU61
+ 235 0014 0023     		movs	r3, #0
+ 236 0016 2383     		strh	r3, [r4, #24]	@ movhi
+  35:mylib/icm20600.c **** 
+ 237              		.loc 1 35 1 view .LVU62
+ 238 0018 10BD     		pop	{r4, pc}
+ 239              	.LVL15:
+ 240              	.L10:
+ 241              	.LCFI7:
+ 242              		.cfi_def_cfa_offset 0
+ 243              		.cfi_restore 4
+ 244              		.cfi_restore 14
+  35:mylib/icm20600.c **** 
+ 245              		.loc 1 35 1 view .LVU63
+ 246 001a 7047     		bx	lr
+ 247              		.cfi_endproc
+ 248              	.LFE131:
+ 250              		.section	.text.I2C_Error_Check,"ax",%progbits
+ 251              		.align	1
+ 252              		.global	I2C_Error_Check
+ 253              		.syntax unified
+ 254              		.thumb
+ 255              		.thumb_func
+ 256              		.fpu fpv4-sp-d16
+ 258              	I2C_Error_Check:
+ 259              	.LVL16:
+ 260              	.LFB133:
+  44:mylib/icm20600.c **** 
+  45:mylib/icm20600.c **** inline void I2C_Error_Check(MPU_Dev *dev,uint8_t i2c_result){
+ 261              		.loc 1 45 61 is_stmt 1 view -0
+ 262              		.cfi_startproc
+ 263              		@ args = 0, pretend = 0, frame = 0
+ 264              		@ frame_needed = 0, uses_anonymous_args = 0
+  46:mylib/icm20600.c ****   if(i2c_result!=dev->I2C_OK){
+ 265              		.loc 1 46 3 view .LVU65
+ 266              		.loc 1 46 21 is_stmt 0 view .LVU66
+ 267 0000 C37D     		ldrb	r3, [r0, #23]	@ zero_extendqisi2
+ 268              		.loc 1 46 5 view .LVU67
+ 269 0002 8B42     		cmp	r3, r1
+ 270 0004 0CD0     		beq	.L16
+  45:mylib/icm20600.c ****   if(i2c_result!=dev->I2C_OK){
+ 271              		.loc 1 45 61 view .LVU68
+ 272 0006 10B5     		push	{r4, lr}
+ 273              	.LCFI8:
+ 274              		.cfi_def_cfa_offset 8
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 7
+
+
+ 275              		.cfi_offset 4, -8
+ 276              		.cfi_offset 14, -4
+ 277 0008 0446     		mov	r4, r0
+  47:mylib/icm20600.c ****     mpu_error_deal(dev);
+ 278              		.loc 1 47 5 is_stmt 1 view .LVU69
+ 279              	.LVL17:
+ 280              	.LBB20:
+ 281              	.LBI20:
+  29:mylib/icm20600.c ****   dev->i2c_error_count++;
+ 282              		.loc 1 29 13 view .LVU70
+ 283              	.LBB21:
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 284              		.loc 1 30 3 view .LVU71
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 285              		.loc 1 30 6 is_stmt 0 view .LVU72
+ 286 000a 038B     		ldrh	r3, [r0, #24]
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 287              		.loc 1 30 23 view .LVU73
+ 288 000c 0133     		adds	r3, r3, #1
+ 289 000e 9BB2     		uxth	r3, r3
+ 290 0010 0383     		strh	r3, [r0, #24]	@ movhi
+  31:mylib/icm20600.c ****     dev->i2c_reset();
+ 291              		.loc 1 31 3 is_stmt 1 view .LVU74
+  31:mylib/icm20600.c ****     dev->i2c_reset();
+ 292              		.loc 1 31 5 is_stmt 0 view .LVU75
+ 293 0012 142B     		cmp	r3, #20
+ 294 0014 03D9     		bls	.L13
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 295              		.loc 1 32 5 is_stmt 1 view .LVU76
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 296              		.loc 1 32 8 is_stmt 0 view .LVU77
+ 297 0016 8368     		ldr	r3, [r0, #8]
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 298              		.loc 1 32 5 view .LVU78
+ 299 0018 9847     		blx	r3
+ 300              	.LVL18:
+  33:mylib/icm20600.c ****   }
+ 301              		.loc 1 33 5 is_stmt 1 view .LVU79
+  33:mylib/icm20600.c ****   }
+ 302              		.loc 1 33 25 is_stmt 0 view .LVU80
+ 303 001a 0023     		movs	r3, #0
+ 304 001c 2383     		strh	r3, [r4, #24]	@ movhi
+ 305              	.LVL19:
+ 306              	.L13:
+  33:mylib/icm20600.c ****   }
+ 307              		.loc 1 33 25 view .LVU81
+ 308              	.LBE21:
+ 309              	.LBE20:
+  48:mylib/icm20600.c ****   }
+  49:mylib/icm20600.c **** }
+ 310              		.loc 1 49 1 view .LVU82
+ 311 001e 10BD     		pop	{r4, pc}
+ 312              	.LVL20:
+ 313              	.L16:
+ 314              	.LCFI9:
+ 315              		.cfi_def_cfa_offset 0
+ 316              		.cfi_restore 4
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 8
+
+
+ 317              		.cfi_restore 14
+ 318              		.loc 1 49 1 view .LVU83
+ 319 0020 7047     		bx	lr
+ 320              		.cfi_endproc
+ 321              	.LFE133:
+ 323              		.section	.text.MPU_Read6500,"ax",%progbits
+ 324              		.align	1
+ 325              		.global	MPU_Read6500
+ 326              		.syntax unified
+ 327              		.thumb
+ 328              		.thumb_func
+ 329              		.fpu fpv4-sp-d16
+ 331              	MPU_Read6500:
+ 332              	.LVL21:
+ 333              	.LFB134:
+  50:mylib/icm20600.c **** void MPU_Read6500(MPU_Dev *dev,int16_t ac[],int16_t gy[]){
+ 334              		.loc 1 50 58 is_stmt 1 view -0
+ 335              		.cfi_startproc
+ 336              		@ args = 0, pretend = 0, frame = 8
+ 337              		@ frame_needed = 0, uses_anonymous_args = 0
+ 338              		.loc 1 50 58 is_stmt 0 view .LVU85
+ 339 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 340              	.LCFI10:
+ 341              		.cfi_def_cfa_offset 20
+ 342              		.cfi_offset 4, -20
+ 343              		.cfi_offset 5, -16
+ 344              		.cfi_offset 6, -12
+ 345              		.cfi_offset 7, -8
+ 346              		.cfi_offset 14, -4
+ 347 0002 83B0     		sub	sp, sp, #12
+ 348              	.LCFI11:
+ 349              		.cfi_def_cfa_offset 32
+ 350 0004 0446     		mov	r4, r0
+ 351 0006 0E46     		mov	r6, r1
+ 352 0008 1546     		mov	r5, r2
+  51:mylib/icm20600.c ****   
+  52:mylib/icm20600.c ****   uint8_t temp[6];
+ 353              		.loc 1 52 3 is_stmt 1 view .LVU86
+  53:mylib/icm20600.c ****   uint8_t i2c_result;
+ 354              		.loc 1 53 3 view .LVU87
+  54:mylib/icm20600.c ****   
+  55:mylib/icm20600.c ****   i2c_result=dev->i2c_read_buffer(dev->dev_addr,ACCEL_XOUT_H,temp,6);
+ 355              		.loc 1 55 3 view .LVU88
+ 356              		.loc 1 55 17 is_stmt 0 view .LVU89
+ 357 000a 4768     		ldr	r7, [r0, #4]
+ 358              		.loc 1 55 14 view .LVU90
+ 359 000c 0623     		movs	r3, #6
+ 360 000e 6A46     		mov	r2, sp
+ 361              	.LVL22:
+ 362              		.loc 1 55 14 view .LVU91
+ 363 0010 3B21     		movs	r1, #59
+ 364              	.LVL23:
+ 365              		.loc 1 55 14 view .LVU92
+ 366 0012 007D     		ldrb	r0, [r0, #20]	@ zero_extendqisi2
+ 367              	.LVL24:
+ 368              		.loc 1 55 14 view .LVU93
+ 369 0014 B847     		blx	r7
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 9
+
+
+ 370              	.LVL25:
+  56:mylib/icm20600.c ****   I2C_Error_Check(dev,i2c_result);
+ 371              		.loc 1 56 3 is_stmt 1 view .LVU94
+ 372              	.LBB22:
+ 373              	.LBI22:
+  45:mylib/icm20600.c ****   if(i2c_result!=dev->I2C_OK){
+ 374              		.loc 1 45 13 view .LVU95
+ 375              	.LBB23:
+  46:mylib/icm20600.c ****     mpu_error_deal(dev);
+ 376              		.loc 1 46 3 view .LVU96
+  46:mylib/icm20600.c ****     mpu_error_deal(dev);
+ 377              		.loc 1 46 21 is_stmt 0 view .LVU97
+ 378 0016 E37D     		ldrb	r3, [r4, #23]	@ zero_extendqisi2
+  46:mylib/icm20600.c ****     mpu_error_deal(dev);
+ 379              		.loc 1 46 5 view .LVU98
+ 380 0018 9842     		cmp	r0, r3
+ 381 001a 09D0     		beq	.L20
+  47:mylib/icm20600.c ****   }
+ 382              		.loc 1 47 5 is_stmt 1 view .LVU99
+ 383              	.LVL26:
+ 384              	.LBB24:
+ 385              	.LBI24:
+  29:mylib/icm20600.c ****   dev->i2c_error_count++;
+ 386              		.loc 1 29 13 view .LVU100
+ 387              	.LBB25:
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 388              		.loc 1 30 3 view .LVU101
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 389              		.loc 1 30 6 is_stmt 0 view .LVU102
+ 390 001c 238B     		ldrh	r3, [r4, #24]
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 391              		.loc 1 30 23 view .LVU103
+ 392 001e 0133     		adds	r3, r3, #1
+ 393 0020 9BB2     		uxth	r3, r3
+ 394 0022 2383     		strh	r3, [r4, #24]	@ movhi
+  31:mylib/icm20600.c ****     dev->i2c_reset();
+ 395              		.loc 1 31 3 is_stmt 1 view .LVU104
+  31:mylib/icm20600.c ****     dev->i2c_reset();
+ 396              		.loc 1 31 5 is_stmt 0 view .LVU105
+ 397 0024 142B     		cmp	r3, #20
+ 398 0026 03D9     		bls	.L20
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 399              		.loc 1 32 5 is_stmt 1 view .LVU106
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 400              		.loc 1 32 8 is_stmt 0 view .LVU107
+ 401 0028 A368     		ldr	r3, [r4, #8]
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 402              		.loc 1 32 5 view .LVU108
+ 403 002a 9847     		blx	r3
+ 404              	.LVL27:
+  33:mylib/icm20600.c ****   }
+ 405              		.loc 1 33 5 is_stmt 1 view .LVU109
+  33:mylib/icm20600.c ****   }
+ 406              		.loc 1 33 25 is_stmt 0 view .LVU110
+ 407 002c 0023     		movs	r3, #0
+ 408 002e 2383     		strh	r3, [r4, #24]	@ movhi
+ 409              	.LVL28:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 10
+
+
+ 410              	.L20:
+  33:mylib/icm20600.c ****   }
+ 411              		.loc 1 33 25 view .LVU111
+ 412              	.LBE25:
+ 413              	.LBE24:
+ 414              	.LBE23:
+ 415              	.LBE22:
+  57:mylib/icm20600.c ****   ac[0]=(temp[0]<<8)|temp[1];
+ 416              		.loc 1 57 3 is_stmt 1 view .LVU112
+ 417              		.loc 1 57 14 is_stmt 0 view .LVU113
+ 418 0030 9DF80020 		ldrb	r2, [sp]	@ zero_extendqisi2
+ 419              		.loc 1 57 26 view .LVU114
+ 420 0034 9DF80130 		ldrb	r3, [sp, #1]	@ zero_extendqisi2
+ 421              		.loc 1 57 21 view .LVU115
+ 422 0038 43EA0223 		orr	r3, r3, r2, lsl #8
+ 423              		.loc 1 57 8 view .LVU116
+ 424 003c 3380     		strh	r3, [r6]	@ movhi
+  58:mylib/icm20600.c ****   ac[1]=(temp[2]<<8)|temp[3];
+ 425              		.loc 1 58 3 is_stmt 1 view .LVU117
+ 426              		.loc 1 58 14 is_stmt 0 view .LVU118
+ 427 003e 9DF80220 		ldrb	r2, [sp, #2]	@ zero_extendqisi2
+ 428              		.loc 1 58 26 view .LVU119
+ 429 0042 9DF80330 		ldrb	r3, [sp, #3]	@ zero_extendqisi2
+ 430              		.loc 1 58 21 view .LVU120
+ 431 0046 43EA0223 		orr	r3, r3, r2, lsl #8
+ 432              		.loc 1 58 8 view .LVU121
+ 433 004a 7380     		strh	r3, [r6, #2]	@ movhi
+  59:mylib/icm20600.c ****   ac[2]=(temp[4]<<8)|temp[5];
+ 434              		.loc 1 59 3 is_stmt 1 view .LVU122
+ 435              		.loc 1 59 14 is_stmt 0 view .LVU123
+ 436 004c 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ 437              		.loc 1 59 26 view .LVU124
+ 438 0050 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 439              		.loc 1 59 21 view .LVU125
+ 440 0054 43EA0223 		orr	r3, r3, r2, lsl #8
+ 441              		.loc 1 59 8 view .LVU126
+ 442 0058 B380     		strh	r3, [r6, #4]	@ movhi
+  60:mylib/icm20600.c ****   
+  61:mylib/icm20600.c ****   i2c_result=dev->i2c_read_buffer(dev->dev_addr,GYRO_XOUT_H,temp,6);
+ 443              		.loc 1 61 3 is_stmt 1 view .LVU127
+ 444              		.loc 1 61 17 is_stmt 0 view .LVU128
+ 445 005a 6668     		ldr	r6, [r4, #4]
+ 446              	.LVL29:
+ 447              		.loc 1 61 14 view .LVU129
+ 448 005c 0623     		movs	r3, #6
+ 449 005e 6A46     		mov	r2, sp
+ 450 0060 4321     		movs	r1, #67
+ 451 0062 207D     		ldrb	r0, [r4, #20]	@ zero_extendqisi2
+ 452 0064 B047     		blx	r6
+ 453              	.LVL30:
+  62:mylib/icm20600.c ****   I2C_Error_Check(dev,i2c_result);
+ 454              		.loc 1 62 3 is_stmt 1 view .LVU130
+ 455              	.LBB26:
+ 456              	.LBI26:
+  45:mylib/icm20600.c ****   if(i2c_result!=dev->I2C_OK){
+ 457              		.loc 1 45 13 view .LVU131
+ 458              	.LBB27:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 11
+
+
+  46:mylib/icm20600.c ****     mpu_error_deal(dev);
+ 459              		.loc 1 46 3 view .LVU132
+  46:mylib/icm20600.c ****     mpu_error_deal(dev);
+ 460              		.loc 1 46 21 is_stmt 0 view .LVU133
+ 461 0066 E37D     		ldrb	r3, [r4, #23]	@ zero_extendqisi2
+  46:mylib/icm20600.c ****     mpu_error_deal(dev);
+ 462              		.loc 1 46 5 view .LVU134
+ 463 0068 9842     		cmp	r0, r3
+ 464 006a 09D0     		beq	.L21
+  47:mylib/icm20600.c ****   }
+ 465              		.loc 1 47 5 is_stmt 1 view .LVU135
+ 466              	.LVL31:
+ 467              	.LBB28:
+ 468              	.LBI28:
+  29:mylib/icm20600.c ****   dev->i2c_error_count++;
+ 469              		.loc 1 29 13 view .LVU136
+ 470              	.LBB29:
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 471              		.loc 1 30 3 view .LVU137
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 472              		.loc 1 30 6 is_stmt 0 view .LVU138
+ 473 006c 238B     		ldrh	r3, [r4, #24]
+  30:mylib/icm20600.c ****   if(dev->i2c_error_count>20){
+ 474              		.loc 1 30 23 view .LVU139
+ 475 006e 0133     		adds	r3, r3, #1
+ 476 0070 9BB2     		uxth	r3, r3
+ 477 0072 2383     		strh	r3, [r4, #24]	@ movhi
+  31:mylib/icm20600.c ****     dev->i2c_reset();
+ 478              		.loc 1 31 3 is_stmt 1 view .LVU140
+  31:mylib/icm20600.c ****     dev->i2c_reset();
+ 479              		.loc 1 31 5 is_stmt 0 view .LVU141
+ 480 0074 142B     		cmp	r3, #20
+ 481 0076 03D9     		bls	.L21
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 482              		.loc 1 32 5 is_stmt 1 view .LVU142
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 483              		.loc 1 32 8 is_stmt 0 view .LVU143
+ 484 0078 A368     		ldr	r3, [r4, #8]
+  32:mylib/icm20600.c ****     dev->i2c_error_count=0;
+ 485              		.loc 1 32 5 view .LVU144
+ 486 007a 9847     		blx	r3
+ 487              	.LVL32:
+  33:mylib/icm20600.c ****   }
+ 488              		.loc 1 33 5 is_stmt 1 view .LVU145
+  33:mylib/icm20600.c ****   }
+ 489              		.loc 1 33 25 is_stmt 0 view .LVU146
+ 490 007c 0023     		movs	r3, #0
+ 491 007e 2383     		strh	r3, [r4, #24]	@ movhi
+ 492              	.LVL33:
+ 493              	.L21:
+  33:mylib/icm20600.c ****   }
+ 494              		.loc 1 33 25 view .LVU147
+ 495              	.LBE29:
+ 496              	.LBE28:
+ 497              	.LBE27:
+ 498              	.LBE26:
+  63:mylib/icm20600.c ****   gy[0]=(temp[0]<<8)|temp[1];
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 12
+
+
+ 499              		.loc 1 63 3 is_stmt 1 view .LVU148
+ 500              		.loc 1 63 14 is_stmt 0 view .LVU149
+ 501 0080 9DF80020 		ldrb	r2, [sp]	@ zero_extendqisi2
+ 502              		.loc 1 63 26 view .LVU150
+ 503 0084 9DF80130 		ldrb	r3, [sp, #1]	@ zero_extendqisi2
+ 504              		.loc 1 63 21 view .LVU151
+ 505 0088 43EA0223 		orr	r3, r3, r2, lsl #8
+ 506              		.loc 1 63 8 view .LVU152
+ 507 008c 2B80     		strh	r3, [r5]	@ movhi
+  64:mylib/icm20600.c ****   gy[1]=(temp[2]<<8)|temp[3];
+ 508              		.loc 1 64 3 is_stmt 1 view .LVU153
+ 509              		.loc 1 64 14 is_stmt 0 view .LVU154
+ 510 008e 9DF80220 		ldrb	r2, [sp, #2]	@ zero_extendqisi2
+ 511              		.loc 1 64 26 view .LVU155
+ 512 0092 9DF80330 		ldrb	r3, [sp, #3]	@ zero_extendqisi2
+ 513              		.loc 1 64 21 view .LVU156
+ 514 0096 43EA0223 		orr	r3, r3, r2, lsl #8
+ 515              		.loc 1 64 8 view .LVU157
+ 516 009a 6B80     		strh	r3, [r5, #2]	@ movhi
+  65:mylib/icm20600.c ****   gy[2]=(temp[4]<<8)|temp[5];	
+ 517              		.loc 1 65 3 is_stmt 1 view .LVU158
+ 518              		.loc 1 65 14 is_stmt 0 view .LVU159
+ 519 009c 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ 520              		.loc 1 65 26 view .LVU160
+ 521 00a0 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 522              		.loc 1 65 21 view .LVU161
+ 523 00a4 43EA0223 		orr	r3, r3, r2, lsl #8
+ 524              		.loc 1 65 8 view .LVU162
+ 525 00a8 AB80     		strh	r3, [r5, #4]	@ movhi
+  66:mylib/icm20600.c **** }
+ 526              		.loc 1 66 1 view .LVU163
+ 527 00aa 03B0     		add	sp, sp, #12
+ 528              	.LCFI12:
+ 529              		.cfi_def_cfa_offset 20
+ 530              		@ sp needed
+ 531 00ac F0BD     		pop	{r4, r5, r6, r7, pc}
+ 532              		.loc 1 66 1 view .LVU164
+ 533              		.cfi_endproc
+ 534              	.LFE134:
+ 536              		.section	.text.Gyroraw_to_Angle_Speed,"ax",%progbits
+ 537              		.align	1
+ 538              		.global	Gyroraw_to_Angle_Speed
+ 539              		.syntax unified
+ 540              		.thumb
+ 541              		.thumb_func
+ 542              		.fpu fpv4-sp-d16
+ 544              	Gyroraw_to_Angle_Speed:
+ 545              	.LVL34:
+ 546              	.LFB135:
+  67:mylib/icm20600.c **** 
+  68:mylib/icm20600.c **** void Gyroraw_to_Angle_Speed(MPU_Dev *dev,int16_t *gy,float *angle_speed ){
+ 547              		.loc 1 68 74 is_stmt 1 view -0
+ 548              		.cfi_startproc
+ 549              		@ args = 0, pretend = 0, frame = 0
+ 550              		@ frame_needed = 0, uses_anonymous_args = 0
+ 551              		@ link register save eliminated.
+  69:mylib/icm20600.c ****   for(int i=0;i<3;++i){
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 13
+
+
+ 552              		.loc 1 69 3 view .LVU166
+ 553              	.LBB30:
+ 554              		.loc 1 69 7 view .LVU167
+ 555              		.loc 1 69 11 is_stmt 0 view .LVU168
+ 556 0000 0023     		movs	r3, #0
+ 557              	.LVL35:
+ 558              		.loc 1 69 15 is_stmt 1 view .LVU169
+ 559              		.loc 1 69 3 is_stmt 0 view .LVU170
+ 560 0002 022B     		cmp	r3, #2
+ 561 0004 19DC     		bgt	.L29
+ 562              	.LBE30:
+  68:mylib/icm20600.c ****   for(int i=0;i<3;++i){
+ 563              		.loc 1 68 74 view .LVU171
+ 564 0006 10B4     		push	{r4}
+ 565              	.LCFI13:
+ 566              		.cfi_def_cfa_offset 4
+ 567              		.cfi_offset 4, -4
+ 568              	.L25:
+ 569              	.LBB31:
+  70:mylib/icm20600.c ****     angle_speed[i]=dev->setting->gyro_range*gy[i]/32768.0f;
+ 570              		.loc 1 70 5 is_stmt 1 discriminator 3 view .LVU172
+ 571              		.loc 1 70 23 is_stmt 0 discriminator 3 view .LVU173
+ 572 0008 C469     		ldr	r4, [r0, #28]
+ 573              		.loc 1 70 32 discriminator 3 view .LVU174
+ 574 000a 94ED017A 		vldr.32	s14, [r4, #4]
+ 575              		.loc 1 70 47 discriminator 3 view .LVU175
+ 576 000e 31F91340 		ldrsh	r4, [r1, r3, lsl #1]
+ 577 0012 07EE904A 		vmov	s15, r4	@ int
+ 578              		.loc 1 70 44 discriminator 3 view .LVU176
+ 579 0016 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 580 001a 67EE877A 		vmul.f32	s15, s15, s14
+ 581              		.loc 1 70 16 discriminator 3 view .LVU177
+ 582 001e 02EB8304 		add	r4, r2, r3, lsl #2
+ 583              		.loc 1 70 50 discriminator 3 view .LVU178
+ 584 0022 9FED067A 		vldr.32	s14, .L30
+ 585 0026 67EE877A 		vmul.f32	s15, s15, s14
+ 586              		.loc 1 70 19 discriminator 3 view .LVU179
+ 587 002a C4ED007A 		vstr.32	s15, [r4]
+  69:mylib/icm20600.c ****   for(int i=0;i<3;++i){
+ 588              		.loc 1 69 19 is_stmt 1 discriminator 3 view .LVU180
+ 589 002e 0133     		adds	r3, r3, #1
+ 590              	.LVL36:
+  69:mylib/icm20600.c ****   for(int i=0;i<3;++i){
+ 591              		.loc 1 69 15 discriminator 3 view .LVU181
+  69:mylib/icm20600.c ****   for(int i=0;i<3;++i){
+ 592              		.loc 1 69 3 is_stmt 0 discriminator 3 view .LVU182
+ 593 0030 022B     		cmp	r3, #2
+ 594 0032 E9DD     		ble	.L25
+ 595              	.LBE31:
+  71:mylib/icm20600.c ****   }
+  72:mylib/icm20600.c **** }
+ 596              		.loc 1 72 1 view .LVU183
+ 597 0034 5DF8044B 		ldr	r4, [sp], #4
+ 598              	.LCFI14:
+ 599              		.cfi_restore 4
+ 600              		.cfi_def_cfa_offset 0
+ 601 0038 7047     		bx	lr
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 14
+
+
+ 602              	.L29:
+ 603              		.loc 1 72 1 view .LVU184
+ 604 003a 7047     		bx	lr
+ 605              	.L31:
+ 606              		.align	2
+ 607              	.L30:
+ 608 003c 00000038 		.word	939524096
+ 609              		.cfi_endproc
+ 610              	.LFE135:
+ 612              		.section	.text.MPU9250_Init,"ax",%progbits
+ 613              		.align	1
+ 614              		.global	MPU9250_Init
+ 615              		.syntax unified
+ 616              		.thumb
+ 617              		.thumb_func
+ 618              		.fpu fpv4-sp-d16
+ 620              	MPU9250_Init:
+ 621              	.LVL37:
+ 622              	.LFB136:
+  73:mylib/icm20600.c **** 
+  74:mylib/icm20600.c ****   volatile uint8_t temp_read =0;
+  75:mylib/icm20600.c **** 
+  76:mylib/icm20600.c **** void MPU9250_Init(MPU_Dev * dev){
+ 623              		.loc 1 76 33 is_stmt 1 view -0
+ 624              		.cfi_startproc
+ 625              		@ args = 0, pretend = 0, frame = 0
+ 626              		@ frame_needed = 0, uses_anonymous_args = 0
+ 627              		.loc 1 76 33 is_stmt 0 view .LVU186
+ 628 0000 38B5     		push	{r3, r4, r5, lr}
+ 629              	.LCFI15:
+ 630              		.cfi_def_cfa_offset 16
+ 631              		.cfi_offset 3, -16
+ 632              		.cfi_offset 4, -12
+ 633              		.cfi_offset 5, -8
+ 634              		.cfi_offset 14, -4
+ 635 0002 0446     		mov	r4, r0
+  77:mylib/icm20600.c ****   
+  78:mylib/icm20600.c ****   dev->dev_addr=MPU_Address;
+ 636              		.loc 1 78 3 is_stmt 1 view .LVU187
+ 637              		.loc 1 78 16 is_stmt 0 view .LVU188
+ 638 0004 D023     		movs	r3, #208
+ 639 0006 0375     		strb	r3, [r0, #20]
+  79:mylib/icm20600.c ****   dev->i2c_read_buffer=I2C_Read_Buffer;
+ 640              		.loc 1 79 3 is_stmt 1 view .LVU189
+ 641              		.loc 1 79 23 is_stmt 0 view .LVU190
+ 642 0008 5D4B     		ldr	r3, .L48
+ 643 000a 4360     		str	r3, [r0, #4]
+  80:mylib/icm20600.c ****   dev->i2c_write_buffer=I2C_Write_Buffer;
+ 644              		.loc 1 80 3 is_stmt 1 view .LVU191
+ 645              		.loc 1 80 24 is_stmt 0 view .LVU192
+ 646 000c 5D4B     		ldr	r3, .L48+4
+ 647 000e 0360     		str	r3, [r0]
+  81:mylib/icm20600.c ****   dev->delay_ms=HAL_Delay;
+ 648              		.loc 1 81 3 is_stmt 1 view .LVU193
+ 649              		.loc 1 81 16 is_stmt 0 view .LVU194
+ 650 0010 5D4B     		ldr	r3, .L48+8
+ 651 0012 C360     		str	r3, [r0, #12]
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 15
+
+
+  82:mylib/icm20600.c ****   
+  83:mylib/icm20600.c ****   dev->I2C_OK=0x00;
+ 652              		.loc 1 83 3 is_stmt 1 view .LVU195
+ 653              		.loc 1 83 14 is_stmt 0 view .LVU196
+ 654 0014 0022     		movs	r2, #0
+ 655 0016 C275     		strb	r2, [r0, #23]
+  84:mylib/icm20600.c ****   //dev->I2C_TIME_OUT=HAL_TIMEOUT;
+  85:mylib/icm20600.c ****   dev->i2c_reset=I2C_Reset;
+ 656              		.loc 1 85 3 is_stmt 1 view .LVU197
+ 657              		.loc 1 85 17 is_stmt 0 view .LVU198
+ 658 0018 5C4A     		ldr	r2, .L48+12
+ 659 001a 8260     		str	r2, [r0, #8]
+  86:mylib/icm20600.c ****   dev->delay_us=HAL_Delay;
+ 660              		.loc 1 86 3 is_stmt 1 view .LVU199
+ 661              		.loc 1 86 16 is_stmt 0 view .LVU200
+ 662 001c 0361     		str	r3, [r0, #16]
+  87:mylib/icm20600.c ****   //dev->data=&MPU9250_Data;
+  88:mylib/icm20600.c ****   dev->setting=&MPU9250_Setting;
+ 663              		.loc 1 88 3 is_stmt 1 view .LVU201
+ 664              		.loc 1 88 15 is_stmt 0 view .LVU202
+ 665 001e 5C4B     		ldr	r3, .L48+16
+ 666 0020 C361     		str	r3, [r0, #28]
+  89:mylib/icm20600.c ****   
+  90:mylib/icm20600.c ****   dev->dev_mag_addr=MAG_Address;
+ 667              		.loc 1 90 3 is_stmt 1 view .LVU203
+ 668              		.loc 1 90 20 is_stmt 0 view .LVU204
+ 669 0022 1822     		movs	r2, #24
+ 670 0024 4275     		strb	r2, [r0, #21]
+  91:mylib/icm20600.c ****   
+  92:mylib/icm20600.c ****   dev->setting->accel_range_setting=RANGE16G;
+ 671              		.loc 1 92 3 is_stmt 1 view .LVU205
+ 672              		.loc 1 92 36 is_stmt 0 view .LVU206
+ 673 0026 5A70     		strb	r2, [r3, #1]
+  93:mylib/icm20600.c ****   dev->setting->accel_lpf_setting=0x01;//200hz
+ 674              		.loc 1 93 3 is_stmt 1 view .LVU207
+ 675              		.loc 1 93 34 is_stmt 0 view .LVU208
+ 676 0028 0122     		movs	r2, #1
+ 677 002a 9A70     		strb	r2, [r3, #2]
+  94:mylib/icm20600.c ****   dev->setting->gyro_range_setting=RANGE500;
+ 678              		.loc 1 94 3 is_stmt 1 view .LVU209
+ 679              		.loc 1 94 35 is_stmt 0 view .LVU210
+ 680 002c 0822     		movs	r2, #8
+ 681 002e 1A70     		strb	r2, [r3]
+ 682 0030 28E0     		b	.L33
+ 683              	.LVL38:
+ 684              	.L39:
+  95:mylib/icm20600.c ****   
+  96:mylib/icm20600.c **** MPU_INIT:
+  97:mylib/icm20600.c ****   
+  98:mylib/icm20600.c ****   dev->delay_ms(50);
+  99:mylib/icm20600.c **** 
+ 100:mylib/icm20600.c **** 
+ 101:mylib/icm20600.c ****   mpu_write_byte(dev,PWR_MGMT_1,0x01);
+ 102:mylib/icm20600.c **** 
+ 103:mylib/icm20600.c ****    temp_read  = mpu_read_byte(dev,PWR_MGMT_1); 
+ 104:mylib/icm20600.c ****   mpu_write_byte(dev,SMPLRT_DIV, 0x00);
+ 105:mylib/icm20600.c ****   mpu_write_byte(dev,MPU_CONFIG, 0x02);  //之前延时为20ms(0x06，现在为3ms左右 0x02)
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 16
+
+
+ 106:mylib/icm20600.c ****  temp_read  = mpu_read_byte(dev,MPU_CONFIG); 
+ 107:mylib/icm20600.c ****   mpu_write_byte(dev,GYRO_CONFIG, dev->setting->gyro_range_setting);   //
+ 108:mylib/icm20600.c ****   mpu_write_byte(dev,ACCEL_CONFIG, dev->setting->accel_range_setting); 
+ 109:mylib/icm20600.c ****   mpu_write_byte(dev,ACCEL_CONFIG2, dev->setting->accel_lpf_setting); 
+ 110:mylib/icm20600.c ****   
+ 111:mylib/icm20600.c ****   //mpu_write_byte(dev,FIFO_ENABLE, GYRO_FIFO_EN|ACCEL_FIFO_EN); 
+ 112:mylib/icm20600.c ****   
+ 113:mylib/icm20600.c ****   dev->setting->mag_range=4912.0/100.0f; 
+ 114:mylib/icm20600.c ****   
+ 115:mylib/icm20600.c ****   mpu_write_byte(dev,INT_PIN_CFG,0x02);    //MPU6500 开启路过模式
+ 116:mylib/icm20600.c ****   
+ 117:mylib/icm20600.c ****   dev->delay_ms(50);
+ 118:mylib/icm20600.c ****   
+ 119:mylib/icm20600.c ****   
+ 120:mylib/icm20600.c ****   
+ 121:mylib/icm20600.c ****   switch(dev->setting->gyro_range_setting){
+ 122:mylib/icm20600.c ****   case RANGE250:
+ 123:mylib/icm20600.c ****     dev->setting->gyro_range=250.0f;
+ 685              		.loc 1 123 5 is_stmt 1 view .LVU211
+ 686              		.loc 1 123 29 is_stmt 0 view .LVU212
+ 687 0032 584B     		ldr	r3, .L48+20
+ 688 0034 5360     		str	r3, [r2, #4]	@ float
+ 124:mylib/icm20600.c ****     break;
+ 689              		.loc 1 124 5 is_stmt 1 view .LVU213
+ 690              	.L34:
+ 125:mylib/icm20600.c ****   case RANGE500:
+ 126:mylib/icm20600.c ****     dev->setting->gyro_range=500.0f;
+ 127:mylib/icm20600.c ****     break;
+ 128:mylib/icm20600.c ****   case RANGE1000:
+ 129:mylib/icm20600.c ****     dev->setting->gyro_range=1000.0f;
+ 130:mylib/icm20600.c ****     break;
+ 131:mylib/icm20600.c ****   case RANGE2000:
+ 132:mylib/icm20600.c ****     dev->setting->gyro_range=2000.0f;
+ 133:mylib/icm20600.c ****     break;
+ 134:mylib/icm20600.c ****   }
+ 135:mylib/icm20600.c ****   
+ 136:mylib/icm20600.c ****   switch(dev->setting->accel_range_setting){
+ 691              		.loc 1 136 3 view .LVU214
+ 692              		.loc 1 136 13 is_stmt 0 view .LVU215
+ 693 0036 E269     		ldr	r2, [r4, #28]
+ 694              		.loc 1 136 22 view .LVU216
+ 695 0038 5378     		ldrb	r3, [r2, #1]	@ zero_extendqisi2
+ 696 003a 182B     		cmp	r3, #24
+ 697 003c 19D8     		bhi	.L40
+ 698 003e DFE803F0 		tbb	[pc, r3]
+ 699              	.L42:
+ 700 0042 16       		.byte	(.L45-.L42)/2
+ 701 0043 18       		.byte	(.L40-.L42)/2
+ 702 0044 18       		.byte	(.L40-.L42)/2
+ 703 0045 18       		.byte	(.L40-.L42)/2
+ 704 0046 18       		.byte	(.L40-.L42)/2
+ 705 0047 18       		.byte	(.L40-.L42)/2
+ 706 0048 18       		.byte	(.L40-.L42)/2
+ 707 0049 18       		.byte	(.L40-.L42)/2
+ 708 004a 95       		.byte	(.L44-.L42)/2
+ 709 004b 18       		.byte	(.L40-.L42)/2
+ 710 004c 18       		.byte	(.L40-.L42)/2
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 17
+
+
+ 711 004d 18       		.byte	(.L40-.L42)/2
+ 712 004e 18       		.byte	(.L40-.L42)/2
+ 713 004f 18       		.byte	(.L40-.L42)/2
+ 714 0050 18       		.byte	(.L40-.L42)/2
+ 715 0051 18       		.byte	(.L40-.L42)/2
+ 716 0052 98       		.byte	(.L43-.L42)/2
+ 717 0053 18       		.byte	(.L40-.L42)/2
+ 718 0054 18       		.byte	(.L40-.L42)/2
+ 719 0055 18       		.byte	(.L40-.L42)/2
+ 720 0056 18       		.byte	(.L40-.L42)/2
+ 721 0057 18       		.byte	(.L40-.L42)/2
+ 722 0058 18       		.byte	(.L40-.L42)/2
+ 723 0059 18       		.byte	(.L40-.L42)/2
+ 724 005a 9B       		.byte	(.L41-.L42)/2
+ 725 005b 00       		.p2align 1
+ 726              	.L38:
+ 126:mylib/icm20600.c ****     break;
+ 727              		.loc 1 126 5 is_stmt 1 view .LVU217
+ 126:mylib/icm20600.c ****     break;
+ 728              		.loc 1 126 29 is_stmt 0 view .LVU218
+ 729 005c 4E4B     		ldr	r3, .L48+24
+ 730 005e 5360     		str	r3, [r2, #4]	@ float
+ 127:mylib/icm20600.c ****   case RANGE1000:
+ 731              		.loc 1 127 5 is_stmt 1 view .LVU219
+ 732 0060 E9E7     		b	.L34
+ 733              	.L37:
+ 129:mylib/icm20600.c ****     break;
+ 734              		.loc 1 129 5 view .LVU220
+ 129:mylib/icm20600.c ****     break;
+ 735              		.loc 1 129 29 is_stmt 0 view .LVU221
+ 736 0062 4E4B     		ldr	r3, .L48+28
+ 737 0064 5360     		str	r3, [r2, #4]	@ float
+ 130:mylib/icm20600.c ****   case RANGE2000:
+ 738              		.loc 1 130 5 is_stmt 1 view .LVU222
+ 739 0066 E6E7     		b	.L34
+ 740              	.L35:
+ 132:mylib/icm20600.c ****     break;
+ 741              		.loc 1 132 5 view .LVU223
+ 132:mylib/icm20600.c ****     break;
+ 742              		.loc 1 132 29 is_stmt 0 view .LVU224
+ 743 0068 4D4B     		ldr	r3, .L48+32
+ 744 006a 5360     		str	r3, [r2, #4]	@ float
+ 133:mylib/icm20600.c ****   }
+ 745              		.loc 1 133 5 is_stmt 1 view .LVU225
+ 746 006c E3E7     		b	.L34
+ 747              	.L45:
+ 137:mylib/icm20600.c ****   case RANGE2G:
+ 138:mylib/icm20600.c ****     dev->setting->accel_range=2;
+ 748              		.loc 1 138 5 view .LVU226
+ 749              		.loc 1 138 30 is_stmt 0 view .LVU227
+ 750 006e 0223     		movs	r3, #2
+ 751 0070 1381     		strh	r3, [r2, #8]	@ movhi
+ 139:mylib/icm20600.c ****     break;
+ 752              		.loc 1 139 5 is_stmt 1 view .LVU228
+ 753              	.L40:
+ 140:mylib/icm20600.c ****   case RANGE4G:
+ 141:mylib/icm20600.c ****     dev->setting->accel_range=4;
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 18
+
+
+ 142:mylib/icm20600.c ****     break;	
+ 143:mylib/icm20600.c ****   case RANGE8G:
+ 144:mylib/icm20600.c ****     dev->setting->accel_range=8;
+ 145:mylib/icm20600.c ****     break;	
+ 146:mylib/icm20600.c ****   case RANGE16G:
+ 147:mylib/icm20600.c ****     dev->setting->accel_range=16;
+ 148:mylib/icm20600.c ****     break;		
+ 149:mylib/icm20600.c ****   }
+ 150:mylib/icm20600.c ****   
+ 151:mylib/icm20600.c ****   
+ 152:mylib/icm20600.c ****   
+ 153:mylib/icm20600.c ****   dev->dev_ID=mpu_read_byte(dev,WHO_AM_I);
+ 754              		.loc 1 153 3 view .LVU229
+ 755              		.loc 1 153 15 is_stmt 0 view .LVU230
+ 756 0072 7521     		movs	r1, #117
+ 757 0074 2046     		mov	r0, r4
+ 758 0076 FFF7FEFF 		bl	mpu_read_byte
+ 759              	.LVL39:
+ 760              		.loc 1 153 14 view .LVU231
+ 761 007a A075     		strb	r0, [r4, #22]
+ 154:mylib/icm20600.c ****   
+ 155:mylib/icm20600.c ****   if(dev->dev_ID!=0x11){
+ 762              		.loc 1 155 3 is_stmt 1 view .LVU232
+ 763              		.loc 1 155 5 is_stmt 0 view .LVU233
+ 764 007c 1128     		cmp	r0, #17
+ 765 007e 7ED0     		beq	.L32
+ 156:mylib/icm20600.c ****     dev->i2c_reset();
+ 766              		.loc 1 156 5 is_stmt 1 view .LVU234
+ 767              		.loc 1 156 8 is_stmt 0 view .LVU235
+ 768 0080 A368     		ldr	r3, [r4, #8]
+ 769              		.loc 1 156 5 view .LVU236
+ 770 0082 9847     		blx	r3
+ 771              	.LVL40:
+ 157:mylib/icm20600.c ****     //uprintf("icm20600 init failed!\r\n");
+ 158:mylib/icm20600.c ****     goto MPU_INIT;
+ 772              		.loc 1 158 5 is_stmt 1 view .LVU237
+ 773              	.L33:
+  98:mylib/icm20600.c **** 
+ 774              		.loc 1 98 3 view .LVU238
+  98:mylib/icm20600.c **** 
+ 775              		.loc 1 98 6 is_stmt 0 view .LVU239
+ 776 0084 E368     		ldr	r3, [r4, #12]
+  98:mylib/icm20600.c **** 
+ 777              		.loc 1 98 3 view .LVU240
+ 778 0086 3220     		movs	r0, #50
+ 779 0088 9847     		blx	r3
+ 780              	.LVL41:
+ 101:mylib/icm20600.c **** 
+ 781              		.loc 1 101 3 is_stmt 1 view .LVU241
+ 782 008a 0122     		movs	r2, #1
+ 783 008c 6B21     		movs	r1, #107
+ 784 008e 2046     		mov	r0, r4
+ 785 0090 FFF7FEFF 		bl	mpu_write_byte
+ 786              	.LVL42:
+ 103:mylib/icm20600.c ****   mpu_write_byte(dev,SMPLRT_DIV, 0x00);
+ 787              		.loc 1 103 4 view .LVU242
+ 103:mylib/icm20600.c ****   mpu_write_byte(dev,SMPLRT_DIV, 0x00);
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 19
+
+
+ 788              		.loc 1 103 17 is_stmt 0 view .LVU243
+ 789 0094 6B21     		movs	r1, #107
+ 790 0096 2046     		mov	r0, r4
+ 791 0098 FFF7FEFF 		bl	mpu_read_byte
+ 792              	.LVL43:
+ 103:mylib/icm20600.c ****   mpu_write_byte(dev,SMPLRT_DIV, 0x00);
+ 793              		.loc 1 103 15 view .LVU244
+ 794 009c 414D     		ldr	r5, .L48+36
+ 795 009e 2870     		strb	r0, [r5]
+ 104:mylib/icm20600.c ****   mpu_write_byte(dev,MPU_CONFIG, 0x02);  //之前延时为20ms(0x06，现在为3ms左右 0x02)
+ 796              		.loc 1 104 3 is_stmt 1 view .LVU245
+ 797 00a0 0022     		movs	r2, #0
+ 798 00a2 1921     		movs	r1, #25
+ 799 00a4 2046     		mov	r0, r4
+ 800 00a6 FFF7FEFF 		bl	mpu_write_byte
+ 801              	.LVL44:
+ 105:mylib/icm20600.c ****  temp_read  = mpu_read_byte(dev,MPU_CONFIG); 
+ 802              		.loc 1 105 3 view .LVU246
+ 803 00aa 0222     		movs	r2, #2
+ 804 00ac 1A21     		movs	r1, #26
+ 805 00ae 2046     		mov	r0, r4
+ 806 00b0 FFF7FEFF 		bl	mpu_write_byte
+ 807              	.LVL45:
+ 106:mylib/icm20600.c ****   mpu_write_byte(dev,GYRO_CONFIG, dev->setting->gyro_range_setting);   //
+ 808              		.loc 1 106 2 view .LVU247
+ 106:mylib/icm20600.c ****   mpu_write_byte(dev,GYRO_CONFIG, dev->setting->gyro_range_setting);   //
+ 809              		.loc 1 106 15 is_stmt 0 view .LVU248
+ 810 00b4 1A21     		movs	r1, #26
+ 811 00b6 2046     		mov	r0, r4
+ 812 00b8 FFF7FEFF 		bl	mpu_read_byte
+ 813              	.LVL46:
+ 106:mylib/icm20600.c ****   mpu_write_byte(dev,GYRO_CONFIG, dev->setting->gyro_range_setting);   //
+ 814              		.loc 1 106 13 view .LVU249
+ 815 00bc 2870     		strb	r0, [r5]
+ 107:mylib/icm20600.c ****   mpu_write_byte(dev,ACCEL_CONFIG, dev->setting->accel_range_setting); 
+ 816              		.loc 1 107 3 is_stmt 1 view .LVU250
+ 107:mylib/icm20600.c ****   mpu_write_byte(dev,ACCEL_CONFIG, dev->setting->accel_range_setting); 
+ 817              		.loc 1 107 38 is_stmt 0 view .LVU251
+ 818 00be E369     		ldr	r3, [r4, #28]
+ 107:mylib/icm20600.c ****   mpu_write_byte(dev,ACCEL_CONFIG, dev->setting->accel_range_setting); 
+ 819              		.loc 1 107 3 view .LVU252
+ 820 00c0 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 821 00c2 1B21     		movs	r1, #27
+ 822 00c4 2046     		mov	r0, r4
+ 823 00c6 FFF7FEFF 		bl	mpu_write_byte
+ 824              	.LVL47:
+ 108:mylib/icm20600.c ****   mpu_write_byte(dev,ACCEL_CONFIG2, dev->setting->accel_lpf_setting); 
+ 825              		.loc 1 108 3 is_stmt 1 view .LVU253
+ 108:mylib/icm20600.c ****   mpu_write_byte(dev,ACCEL_CONFIG2, dev->setting->accel_lpf_setting); 
+ 826              		.loc 1 108 39 is_stmt 0 view .LVU254
+ 827 00ca E369     		ldr	r3, [r4, #28]
+ 108:mylib/icm20600.c ****   mpu_write_byte(dev,ACCEL_CONFIG2, dev->setting->accel_lpf_setting); 
+ 828              		.loc 1 108 3 view .LVU255
+ 829 00cc 5A78     		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 830 00ce 1C21     		movs	r1, #28
+ 831 00d0 2046     		mov	r0, r4
+ 832 00d2 FFF7FEFF 		bl	mpu_write_byte
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 20
+
+
+ 833              	.LVL48:
+ 109:mylib/icm20600.c ****   
+ 834              		.loc 1 109 3 is_stmt 1 view .LVU256
+ 109:mylib/icm20600.c ****   
+ 835              		.loc 1 109 40 is_stmt 0 view .LVU257
+ 836 00d6 E369     		ldr	r3, [r4, #28]
+ 109:mylib/icm20600.c ****   
+ 837              		.loc 1 109 3 view .LVU258
+ 838 00d8 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 839 00da 1D21     		movs	r1, #29
+ 840 00dc 2046     		mov	r0, r4
+ 841 00de FFF7FEFF 		bl	mpu_write_byte
+ 842              	.LVL49:
+ 113:mylib/icm20600.c ****   
+ 843              		.loc 1 113 3 is_stmt 1 view .LVU259
+ 113:mylib/icm20600.c ****   
+ 844              		.loc 1 113 6 is_stmt 0 view .LVU260
+ 845 00e2 E369     		ldr	r3, [r4, #28]
+ 113:mylib/icm20600.c ****   
+ 846              		.loc 1 113 26 view .LVU261
+ 847 00e4 304A     		ldr	r2, .L48+40
+ 848 00e6 DA60     		str	r2, [r3, #12]	@ float
+ 115:mylib/icm20600.c ****   
+ 849              		.loc 1 115 3 is_stmt 1 view .LVU262
+ 850 00e8 0222     		movs	r2, #2
+ 851 00ea 3721     		movs	r1, #55
+ 852 00ec 2046     		mov	r0, r4
+ 853 00ee FFF7FEFF 		bl	mpu_write_byte
+ 854              	.LVL50:
+ 117:mylib/icm20600.c ****   
+ 855              		.loc 1 117 3 view .LVU263
+ 117:mylib/icm20600.c ****   
+ 856              		.loc 1 117 6 is_stmt 0 view .LVU264
+ 857 00f2 E368     		ldr	r3, [r4, #12]
+ 117:mylib/icm20600.c ****   
+ 858              		.loc 1 117 3 view .LVU265
+ 859 00f4 3220     		movs	r0, #50
+ 860 00f6 9847     		blx	r3
+ 861              	.LVL51:
+ 121:mylib/icm20600.c ****   case RANGE250:
+ 862              		.loc 1 121 3 is_stmt 1 view .LVU266
+ 121:mylib/icm20600.c ****   case RANGE250:
+ 863              		.loc 1 121 13 is_stmt 0 view .LVU267
+ 864 00f8 E269     		ldr	r2, [r4, #28]
+ 121:mylib/icm20600.c ****   case RANGE250:
+ 865              		.loc 1 121 22 view .LVU268
+ 866 00fa 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 867 00fc 182B     		cmp	r3, #24
+ 868 00fe 9AD8     		bhi	.L34
+ 869 0100 01A1     		adr	r1, .L36
+ 870 0102 51F823F0 		ldr	pc, [r1, r3, lsl #2]
+ 871 0106 00BF     		.p2align 2
+ 872              	.L36:
+ 873 0108 33000000 		.word	.L39+1
+ 874 010c 37000000 		.word	.L34+1
+ 875 0110 37000000 		.word	.L34+1
+ 876 0114 37000000 		.word	.L34+1
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 21
+
+
+ 877 0118 37000000 		.word	.L34+1
+ 878 011c 37000000 		.word	.L34+1
+ 879 0120 37000000 		.word	.L34+1
+ 880 0124 37000000 		.word	.L34+1
+ 881 0128 5D000000 		.word	.L38+1
+ 882 012c 37000000 		.word	.L34+1
+ 883 0130 37000000 		.word	.L34+1
+ 884 0134 37000000 		.word	.L34+1
+ 885 0138 37000000 		.word	.L34+1
+ 886 013c 37000000 		.word	.L34+1
+ 887 0140 37000000 		.word	.L34+1
+ 888 0144 37000000 		.word	.L34+1
+ 889 0148 63000000 		.word	.L37+1
+ 890 014c 37000000 		.word	.L34+1
+ 891 0150 37000000 		.word	.L34+1
+ 892 0154 37000000 		.word	.L34+1
+ 893 0158 37000000 		.word	.L34+1
+ 894 015c 37000000 		.word	.L34+1
+ 895 0160 37000000 		.word	.L34+1
+ 896 0164 37000000 		.word	.L34+1
+ 897 0168 69000000 		.word	.L35+1
+ 898              		.p2align 1
+ 899              	.L44:
+ 141:mylib/icm20600.c ****     break;	
+ 900              		.loc 1 141 5 is_stmt 1 view .LVU269
+ 141:mylib/icm20600.c ****     break;	
+ 901              		.loc 1 141 30 is_stmt 0 view .LVU270
+ 902 016c 0423     		movs	r3, #4
+ 903 016e 1381     		strh	r3, [r2, #8]	@ movhi
+ 142:mylib/icm20600.c ****   case RANGE8G:
+ 904              		.loc 1 142 5 is_stmt 1 view .LVU271
+ 905 0170 7FE7     		b	.L40
+ 906              	.L43:
+ 144:mylib/icm20600.c ****     break;	
+ 907              		.loc 1 144 5 view .LVU272
+ 144:mylib/icm20600.c ****     break;	
+ 908              		.loc 1 144 30 is_stmt 0 view .LVU273
+ 909 0172 0823     		movs	r3, #8
+ 910 0174 1381     		strh	r3, [r2, #8]	@ movhi
+ 145:mylib/icm20600.c ****   case RANGE16G:
+ 911              		.loc 1 145 5 is_stmt 1 view .LVU274
+ 912 0176 7CE7     		b	.L40
+ 913              	.L41:
+ 147:mylib/icm20600.c ****     break;		
+ 914              		.loc 1 147 5 view .LVU275
+ 147:mylib/icm20600.c ****     break;		
+ 915              		.loc 1 147 30 is_stmt 0 view .LVU276
+ 916 0178 1023     		movs	r3, #16
+ 917 017a 1381     		strh	r3, [r2, #8]	@ movhi
+ 148:mylib/icm20600.c ****   }
+ 918              		.loc 1 148 5 is_stmt 1 view .LVU277
+ 919 017c 79E7     		b	.L40
+ 920              	.L32:
+ 159:mylib/icm20600.c ****   }
+ 160:mylib/icm20600.c ****   
+ 161:mylib/icm20600.c **** }...
+ 921              		.loc 1 161 1 is_stmt 0 view .LVU278
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 22
+
+
+ 922 017e 38BD     		pop	{r3, r4, r5, pc}
+ 923              	.LVL52:
+ 924              	.L49:
+ 925              		.loc 1 161 1 view .LVU279
+ 926              		.align	2
+ 927              	.L48:
+ 928 0180 00000000 		.word	I2C_Read_Buffer
+ 929 0184 00000000 		.word	I2C_Write_Buffer
+ 930 0188 00000000 		.word	HAL_Delay
+ 931 018c 00000000 		.word	I2C_Reset
+ 932 0190 00000000 		.word	MPU9250_Setting
+ 933 0194 00007A43 		.word	1132068864
+ 934 0198 0000FA43 		.word	1140457472
+ 935 019c 00007A44 		.word	1148846080
+ 936 01a0 0000FA44 		.word	1157234688
+ 937 01a4 00000000 		.word	.LANCHOR0
+ 938 01a8 E17A4442 		.word	1111784161
+ 939              		.cfi_endproc
+ 940              	.LFE136:
+ 942              		.global	temp_read
+ 943              		.comm	MPU9250_Setting,16,4
+ 944              		.comm	MPU9250,32,4
+ 945              		.section	.bss.temp_read,"aw",%nobits
+ 946              		.set	.LANCHOR0,. + 0
+ 949              	temp_read:
+ 950 0000 00       		.space	1
+ 951              		.text
+ 952              	.Letext0:
+ 953              		.file 2 "c:\\arm_gcc\\arm-none-eabi\\include\\machine\\_default_types.h"
+ 954              		.file 3 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 955              		.file 4 "mylib/icm20600.h"
+ 956              		.file 5 "Drivers/CMSIS/Include/core_cm4.h"
+ 957              		.file 6 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h"
+ 958              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s 			page 23
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 icm20600.c
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:18     .text.mpu_write_byte:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:25     .text.mpu_write_byte:00000000 mpu_write_byte
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:106    .text.mpu_read_byte:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:112    .text.mpu_read_byte:00000000 mpu_read_byte
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:195    .text.mpu_error_deal:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:202    .text.mpu_error_deal:00000000 mpu_error_deal
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:251    .text.I2C_Error_Check:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:258    .text.I2C_Error_Check:00000000 I2C_Error_Check
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:324    .text.MPU_Read6500:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:331    .text.MPU_Read6500:00000000 MPU_Read6500
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:537    .text.Gyroraw_to_Angle_Speed:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:544    .text.Gyroraw_to_Angle_Speed:00000000 Gyroraw_to_Angle_Speed
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:608    .text.Gyroraw_to_Angle_Speed:0000003c $d
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:613    .text.MPU9250_Init:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:620    .text.MPU9250_Init:00000000 MPU9250_Init
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:700    .text.MPU9250_Init:00000042 $d
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:873    .text.MPU9250_Init:00000108 $d
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:898    .text.MPU9250_Init:0000016c $t
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:928    .text.MPU9250_Init:00000180 $d
+                            *COM*:00000010 MPU9250_Setting
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:949    .bss.temp_read:00000000 temp_read
+                            *COM*:00000020 MPU9250
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:950    .bss.temp_read:00000000 $d
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:725    .text.MPU9250_Init:0000005b $d
+C:\Users\ncer\AppData\Local\Temp\ccVwdvdw.s:725    .text.MPU9250_Init:0000005c $t
+
+UNDEFINED SYMBOLS
+I2C_Read_Buffer
+I2C_Write_Buffer
+HAL_Delay
+I2C_Reset

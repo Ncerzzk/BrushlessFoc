@@ -5,14 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Cortex Debug",
+            "name": "BemJeMing",
             "cwd": "${workspaceRoot}",
             "executable": "./build/BJMDriver.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "jlink",
             "svdFile": "STM32F405.svd",
-            "device":"STM32F405RG
+            "device":"STM32F405RG"
+        },
+        
+        {
+            "name": "MyFoC",
+            "cwd": "${workspaceRoot}",
+            "executable": "./build_my/MYFOCDriver.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "svdFile": "STM32F405.svd",
+            "device":"STM32F405RG"
         }
     ]
 }

@@ -9,6 +9,7 @@
 #include "arm_math.h"
 
 #include "gpio.h"
+#include "utils.h"
 
 
 #define CURRENT_ADC ADC1
@@ -27,6 +28,7 @@
 #define UTILS_LP_FAST(value, sample, filter_constant)	(value -= (filter_constant) * (value - (sample)))
 #define FOC_STOP() Set_Vector(U0,0.1f) 
 inline void Check_Mode();
+static void Get_Speed();
 
 float Base_Speed=1500.0f;
 float Speed_Attitude=500.0f;
@@ -34,7 +36,6 @@ float Speed_Attitude=500.0f;
 float Base_Duty= 0.1f;
 float Duty_Amp = 0.0f;
 
-uint8_t Wave_Flag=0;
 
 
 int16_t Position;
@@ -61,7 +62,18 @@ Mode Last_Mode=DUTY;
 float Id_Set=0;
 float Iq_Set=0.6f;
 
-float Phi = 0;
+float Phi = 90;
+float Position_Offset = 132; 
+// This var is used to align the offset of propeller. 旋翼头的零点
+// 定义该零点为
+/*
+
+        /------------------/
+      /------------------/
+    /------------------/
+  /------------------/
+
+*/
 
 PID_S Id_PID ={
     .KP=2,
@@ -108,6 +120,42 @@ void PID_I_Clear(){
     Speed_PID.i=0;
     Position_PID.i=0;
 }
+
+// 该函数用于处理暗室长曝光频闪
+// exposure_time:曝光时间,单位:s
+// flash_time:闪光时间,单位:ms
+#ifdef CAMERA_SUPPORT
+
+uint8_t CAMERA_Open=1;
+float Camera_Catch_Angle=90;
+#define CAMERA_POS_ERROR 1
+void Camera_Exposure(uint32_t exposure_time,float flash_time,float pos){
+    static int cnt=0;
+    if(!CAMERA_Open){
+        return ;
+    }
+    float angle = Position_Degree - Position_Offset;
+    if(angle<0){
+        angle+=360;
+    }
+    if(fabsf(angle-pos)<CAMERA_POS_ERROR && cnt==0){
+        HAL_GPIO_WritePin(CAMERA_EXP_GPIO_Port,CAMERA_EXP_PIN,GPIO_PIN_SET);
+        cnt++;
+        return ;
+    }
+
+    if(cnt==(uint32_t)(FOC_FREQ/1000*flash_time)){
+        HAL_GPIO_WritePin(CAMERA_EXP_GPIO_Port,CAMERA_EXP_PIN,GPIO_PIN_RESET); 
+    }else if(cnt==FOC_FREQ*exposure_time){
+        cnt=0;
+    }
+
+    if(cnt>0){
+        cnt++;
+    }
+}
+#endif
+
 
 void Current_ADC_Init(int times){
     int32_t curr_sum[2]={0};
@@ -162,6 +210,7 @@ void Foc_Init(){
 
 #define SQRT3    1.73205080756887719000f
 #define SQRT3_2  0.866025403784438595f
+#define SQRT3_3  0.57735026918f
 void Clark_Conv(float ia, float ic, float *ialpha, float *ibeta)
 {
     ia= -ia;
@@ -171,8 +220,12 @@ void Clark_Conv(float ia, float ic, float *ialpha, float *ibeta)
     // 与硬件上的正负相反
 
     float ib = -(ia+ic);
-    *ialpha = 1.5f*ia;
-    *ibeta = SQRT3_2 * ib + SQRT3_2* (ib + ia);
+    //*ialpha = 1.5f*ia;
+    //*ibeta = SQRT3_2 * ib + SQRT3_2* (ib + ia);
+    *ialpha = ia;
+    *ibeta = SQRT3_3 * ib + SQRT3_3* (ib + ia); 
+    // 恒幅值变换
+    // 为什么要恒幅值变换？使变换出来的两轴信号平方和，与原来的信号幅值相同
 }
 
 void Park_Conv(float ialpha,float ibeta,float theta,float *iq,float *id){
@@ -253,6 +306,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
         Clark_Conv(current[1],current[0],&ialpha,&ibeta);
     
         Position = Get_Position();
+        Get_Speed();
         Position_Degree = Position_to_Rad_Dgree(Position,1);
         Position_Phase_Degree = Position_Degree * Motor.Pairs-Motor.Position_Phase_Offset;
 
@@ -260,20 +314,28 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
         UTILS_LP_FAST(iq,temp_iq,0.1);
         UTILS_LP_FAST(id,temp_id,0.1);
         HAL_GPIO_WritePin(GPIOC,LED_GREEN_Pin,GPIO_PIN_RESET);   
-        
+
+#ifdef CAMERA_SUPPORT
+        Camera_Exposure(1,0.25,Camera_Catch_Angle);
+#endif
+
         if(FOC_Flag){
             if(Board_Mode>=CURRENT){
                 Current_Control();
             }else if(Board_Mode == DUTY){
-                float duty = Base_Duty + Duty_Amp * arm_sin_f32((Position_Degree-Phi)/180.0f*3.1415926f);
+                float duty = Base_Duty + Duty_Amp * arm_cos_f32((Position_Degree-Position_Offset-Phi)/180.0f*3.1415926f);
+                //send_wave(duty*1000,(Position_Degree-Position_Offset-Phi),Position_Degree,Speed/5);
                 SVPWM(Position_Phase_Degree+90,duty);
             }
         }else{
             if(Board_Mode!=TEST)
                 FOC_STOP();
         }
-        if(Wave_Flag)
-            send_wave(Position_Degree,Position_Phase_Degree,Speed,iq);
+        send_debug_wave(&wg1);
+        send_debug_wave(&wg2);
+
+        //if(Wave_Flag)
+        //    send_wave(Position_Degree,Position_Phase_Degree,Speed,iq);
 /*
         if(FOC_Flag){
             
@@ -314,6 +376,16 @@ void Test_Direction(){
     }
 
     Board_Mode = old_mode;
+}
+
+void Measure_Res(){
+    Mode old_mode;
+    old_mode = Board_Mode;
+    Board_Mode = CURRENT; 
+
+
+
+    Set_Vector(U4,0.1f);
 }
 
 inline void Rotate_Phase(float start,float stop,float step){
@@ -387,7 +459,7 @@ void Openloop_Runing(float duty, float freq, int8_t direction, float rps)
     //SVPWM(theta, duty);
 }
 
-static void Speed_Control(){
+static void Get_Speed(){
     static float last_position_phase;
     float sub=0;
     sub= Position_Degree - last_position_phase;
@@ -397,9 +469,13 @@ static void Speed_Control(){
         sub-=360;
     }
     UTILS_LP_FAST(Speed,sub*SPEED_FREQ,0.4);
-
-    Iq_Set=PID_Control(&Speed_PID,Speed_Set,Speed);
     last_position_phase = Position_Degree;
+}
+static void Speed_Control(){
+
+    //Get_Speed();
+    Iq_Set=PID_Control(&Speed_PID,Speed_Set,Speed);
+    //last_position_phase = Position_Degree;
 
  
 }
@@ -441,6 +517,7 @@ inline void Check_Mode(){
     }
 }
 
+ 
 
 /*
 1ms中断太慢了，无法满足精度要求。

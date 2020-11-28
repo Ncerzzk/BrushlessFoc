@@ -92,6 +92,16 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(ENCODER_MISO_GPIO_Port, &GPIO_InitStruct);
 
   #endif
+
+  #ifdef CAMERA_SUPPORT
+  HAL_GPIO_WritePin(CAMERA_EXP_GPIO_Port,CAMERA_EXP_PIN,GPIO_PIN_RESET); 
+
+  GPIO_InitStruct.Pin = CAMERA_EXP_PIN;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(CAMERA_EXP_GPIO_Port, &GPIO_InitStruct); 
+  #endif
   //HAL_GPIO_WritePin(GPIOC, ENCODER_MOSI_Pin|LED_GREEN_Pin|LED_RED_Pin|EN_GATE_Pin 
   //                        |ENCODER_CSN_Pin, GPIO_PIN_RESET);
 

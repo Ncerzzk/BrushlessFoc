@@ -12,6 +12,8 @@ typedef struct
     Motor_Parameter motor_info;
     PID_S id_pid;
     PID_S iq_pid;
+    float position_offset;
+    float phi;
 }Flash_Parameters;
 
 #define STR(x)      #x
@@ -26,6 +28,8 @@ void Print_Parameters(Flash_Parameters *p){
     uprintf_polling("Encoder direction:%d \r\n ",p->motor_info.Encoder_Direction);
     Print_PID(STR(Id_PID),&(p->id_pid));
     Print_PID(STR(Iq_PID),&(p->iq_pid));
+    uprintf_polling("Position Offset:%f\r\n",p->position_offset);
+    uprintf_polling("phi:%f\r\n",p->phi);
 }
 
 void Read_Parameters(uint8_t write_default){
@@ -46,7 +50,8 @@ void Read_Parameters(uint8_t write_default){
     Motor = temp.motor_info;
     Id_PID = temp.id_pid;
     Iq_PID = temp.iq_pid;
-
+    Phi = temp.phi;
+    Position_Offset = temp.position_offset;
 }
 
 
@@ -58,6 +63,8 @@ void Write_Parameter(){
    parameters.motor_info = Motor;
    parameters.id_pid = Id_PID;
    parameters.iq_pid = Iq_PID;
+   parameters.position_offset = Position_Offset;
+   parameters.phi = Phi;
 
    HAL_FLASH_Unlock();
   EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;

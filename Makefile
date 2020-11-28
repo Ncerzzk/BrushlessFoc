@@ -14,7 +14,7 @@
 # target
 ######################################
 TARGET = BJMDriver
-
+TARGET2 = MYFOCDriver
 
 ######################################
 # building variables
@@ -30,10 +30,13 @@ OPT = -Og
 #######################################
 # Build path
 BUILD_DIR = build
+BUILD_DIR2 = build_my
 
 ######################################
 # source
 ######################################
+
+
 # C sources
 C_SOURCES =  \
 Src/main.c \
@@ -41,6 +44,11 @@ mylib/uart_ext.c \
 mylib/command.c \
 mylib/as5047.c \
 mylib/pid.c \
+mylib/soft_i2c.c \
+mylib/icm20600.c \
+mylib/easy_angle.c \
+mylib/debug_utils.c \
+Src/utils.c \
 Src/gpio.c \
 Src/SVPWM.c \
 Src/parameter.c \
@@ -103,11 +111,13 @@ CC = $(GCC_PATH)/$(PREFIX)gcc
 AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
+CPP = $(GCC_PATH)/$(PREFIX)g++
 else
 CC = $(PREFIX)gcc
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
+CPP = $(PREFIX)g++
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
@@ -176,11 +186,11 @@ LDSCRIPT = STM32F405RGTx_FLASH.ld
 # libraries
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
-LDFLAGS += -lrdimon -u _printf_float
+
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
-
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS += -lrdimon -u _printf_float
 
 #######################################
 # build the application
@@ -193,7 +203,7 @@ OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(CC) -c $(CFLAGS) -DBENJAMIN -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
@@ -211,11 +221,50 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir $@		
 
+
+#######################################
+# MY FOC Driver Build
+#######################################
+my: $(BUILD_DIR2)/$(TARGET2).elf $(BUILD_DIR2)/$(TARGET2).hex $(BUILD_DIR2)/$(TARGET2).bin
+LDFLAGS2 = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR2)/$(TARGET2).map,--cref -Wl,--gc-sections
+LDFLAGS2 += -lrdimon -u _printf_float
+#######################################
+# build the application
+#######################################
+# list of objects
+OBJECTS2 = $(addprefix $(BUILD_DIR2)/,$(notdir $(C_SOURCES:.c=.o)))
+vpath %.c $(sort $(dir $(C_SOURCES)))
+# list of ASM program objects
+OBJECTS2 += $(addprefix $(BUILD_DIR2)/,$(notdir $(ASM_SOURCES:.s=.o)))
+vpath %.s $(sort $(dir $(ASM_SOURCES)))
+
+$(BUILD_DIR2)/%.o: %.c Makefile | $(BUILD_DIR2) 
+	$(CC) -c $(CFLAGS) -DMYOWN_FOC -Wa,-a,-ad,-alms=$(BUILD_DIR2)/$(notdir $(<:.c=.lst)) $< -o $@
+
+$(BUILD_DIR2)/%.o: %.cpp Makefile | $(BUILD_DIR2) 
+	$(CC) -c $(CFLAGS) -DMYOWN_FOC -Wa,-a,-ad,-alms=$(BUILD_DIR2)/$(notdir $(<:.c=.lst)) $< -o $
+
+$(BUILD_DIR2)/%.o: %.s Makefile | $(BUILD_DIR2)
+	$(AS) -c $(CFLAGS) $< -o $@
+
+$(BUILD_DIR2)/$(TARGET2).elf: $(OBJECTS2) Makefile
+	$(CC) $(OBJECTS2) $(LDFLAGS2) -o $@
+	$(SZ) $@
+
+$(BUILD_DIR2)/%.hex: $(BUILD_DIR2)/%.elf | $(BUILD_DIR2)
+	$(HEX) $< $@
+	
+$(BUILD_DIR2)/%.bin: $(BUILD_DIR2)/%.elf | $(BUILD_DIR2)
+	$(BIN) $< $@	
+	
+$(BUILD_DIR2):
+	mkdir $@		
 #######################################
 # clean up
 #######################################
 clean:
 	-rm -fR $(BUILD_DIR)
+	-rm -fR $(BUILD_DIR2)
   
 #######################################
 # dependencies

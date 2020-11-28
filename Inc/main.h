@@ -87,7 +87,7 @@ void Error_Handler(void);
 #define ADCVAL_TO_VOLTAGE(x) (x/4096.0f*3.3f)
 
 //       BOARD CONFIG
-#define MYOWN_FOC
+
 
 #ifdef BENJAMIN
 
@@ -129,6 +129,15 @@ void Error_Handler(void);
 #define CCRB  CCR2
 #define CCRC  CCR3
 
+#define CAMERA_SUPPORT
+
+#ifdef CAMERA_SUPPORT
+
+#define CAMERA_EXP_PIN  GPIO_PIN_6
+#define CAMERA_EXP_GPIO_Port GPIOA
+
+#endif
+
 #endif
 
 
@@ -137,6 +146,7 @@ void Error_Handler(void);
 #define FD6288
 
 #define DAC_AS_VREF
+//#define USE_GYRO
 
 #define LED_GREEN_Pin GPIO_PIN_9
 #define LED_GREEN_GPIO_Port GPIOC
@@ -168,7 +178,15 @@ void Error_Handler(void);
 #define CCRB  CCR2
 #define CCRC  CCR3
 
+#define SOFT_I2C_SCL_PIN  GPIO_PIN_5
+#define SOFT_I2C_SCL_PORT GPIOA
+#define SOFT_I2C_SDA_PIN  GPIO_PIN_6
+#define SOFT_I2C_SDA_PORT GPIOA
+
+
 #endif
+
+
 
 
 #define FOC_FREQ  8000

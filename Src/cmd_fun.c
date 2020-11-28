@@ -4,6 +4,8 @@
 #include "foc.h"
 #include "pid.h"
 
+#define ERROR_PARAGRAM()      uprintf("error arg_num!\r\n"); return 
+
 typedef struct{
   char * var_name;
   void * value_ptr;
@@ -19,7 +21,11 @@ Var_Edit_Struct Var_List[]={
   {"sp_a",&Speed_Attitude},
   {"duty",&Base_Duty},
   {"duty_amp",&Duty_Amp},
-  {"phi",&Phi}
+  {"phi",&Phi},
+  {"pos_off",&Position_Offset},
+  #ifdef CAMERA_SUPPORT
+  {"camera",&Camera_Catch_Angle}
+  #endif
 };
 
 #define  STR(x) #x
@@ -79,6 +85,9 @@ void set_val(int arg_num,char ** s,float * args){
 extern void Set_to_Un(uint8_t t,Uvect_Mos target,float duty);
 extern Uvect_Mos U4;
 extern float Position_Degree;
+#ifdef USE_GYRO
+  extern PID_S Angle_PID;
+#endif
 
 void set_to_u4(int arg_num,char ** s,float * args){
   uint8_t temp_t;
@@ -111,6 +120,9 @@ void start(int arg_num,char **s,float *args){
     Id_PID.i=0;
     Speed_PID.i=0;
     Position_PID.i=0;
+    #ifdef USE_GYRO
+    Angle_PID.i=0;
+    #endif
     FOC_Flag = !FOC_Flag;
     uprintf_polling("OK! flag=%d\r\n",FOC_Flag);
     return ;
@@ -138,16 +150,22 @@ void wrtie_param(int arg_num,char **s,float *args){
   uprintf("OK,Save Params\r\n");
 }
 
+#include "debug_utils.h"
 void wave(int arg_num,char **s,float * args){
-  Wave_Flag = !Wave_Flag;
+  if(arg_num == 0x0000){
+    Wave_Flag = !Wave_Flag;
+  }else if(arg_num==0x0001){
+    Wave_ID = args[0];
+  }
+  uprintf("OK ,wave = %d\r\n",Wave_ID);
 }
+
 
 void set_PID(int arg_num,char ** s,float * args){
   PID_S * pid_s=0;
   float * kpkdki=0;
   if(arg_num!=0x0201){
-    uprintf("error arg_num!\r\n");
-    return ;
+      ERROR_PARAGRAM();
   }
   if(compare_string(s[0],"d")){
     pid_s=&Id_PID;
@@ -158,6 +176,11 @@ void set_PID(int arg_num,char ** s,float * args){
   }else if(compare_string(s[0],"pos")){
     pid_s=&Position_PID;
   }
+  #ifdef USE_GYRO
+  else if(compare_string(s[0],"a")){
+    pid_s= &Angle_PID;
+  }
+  #endif
 
 
   pid_s->i=0;
@@ -170,6 +193,29 @@ void set_PID(int arg_num,char ** s,float * args){
   }
   *kpkdki=args[0];
   uprintf("ok set %s 's %s = %f\r\n",s[0],s[1],args[0]);
+}
+
+ #ifdef CAMERA_SUPPORT
+void camera(int arg_num,char **s,float * args){
+  CAMERA_Open = !CAMERA_Open;
+}
+#endif
+
+void position(int arg_num,char **s,float *args){
+ uprintf("position = %f\r\n",Position_Degree);
+}
+
+void set_mode(int arg_num,char **s,float *args){
+  if(arg_num!=0x0001){
+    ERROR_PARAGRAM();
+  }
+  uint8_t temp = (uint8_t)args[0];
+  if(temp>=LAST_MODE){
+    ERROR_PARAGRAM();
+  }else{
+    Board_Mode= temp;
+    uprintf("OK set board mode = %d\r\n",Board_Mode);
+  }
 }
 
 /*
@@ -185,6 +231,11 @@ void command_init(void){
   add_cmd("set_pid",set_PID);
   add_cmd("write",wrtie_param);
   add_cmd("wave",wave);
+  #ifdef CAMERA_SUPPORT
+  add_cmd("camera",camera);
+  #endif
+  add_cmd("pos",position);
+  add_cmd("set_mode",set_mode);
   //add_cmd("song",song);
 }
 
