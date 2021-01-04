@@ -48,6 +48,7 @@ mylib/soft_i2c.c \
 mylib/icm20600.c \
 mylib/easy_angle.c \
 mylib/debug_utils.c \
+mylib/spi_slave.c \
 Src/utils.c \
 Src/gpio.c \
 Src/SVPWM.c \
@@ -57,6 +58,7 @@ Src/arm_sin_f32.c \
 Src/arm_cos_f32.c \
 Src/arm_common_tables.c \
 Src/foc.c \
+Src/foc_spi_com.c \
 Src/cmd_fun.c \
 Src/dac.c \
 Src/adc.c \

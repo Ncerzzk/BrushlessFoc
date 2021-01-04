@@ -2,10 +2,11 @@
 #include "foc.h"
 #include "utils.h"
 
-extern float Position_Phase_Degree,Position_Degree,Speed,iq;
+extern float Position_Phase_Degree,Position_Degree,Speed,iq,id;
 extern float angle[3];
 extern float current[2];
 extern float ialpha,ibeta;
+extern float input_voltage;
 Wave_Group wg1={
     0,
     &Position_Degree,
@@ -20,5 +21,13 @@ Wave_Group wg2={
     current+1,
     &ialpha,
     &ibeta
+};
+
+Wave_Group wg3={
+    2,
+    &input_voltage,
+    &ialpha,
+    &id,
+    &iq
 };
 

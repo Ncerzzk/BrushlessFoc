@@ -4,4 +4,5 @@
 
 extern Wave_Group wg1;
 extern Wave_Group wg2;
+extern Wave_Group wg3;
 #endif

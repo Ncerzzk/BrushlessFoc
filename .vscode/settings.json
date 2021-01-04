@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "string_view": "c"
+        "string_view": "c",
+        "random": "c",
+        "limits": "c"
     }
 }

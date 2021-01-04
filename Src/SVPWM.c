@@ -11,6 +11,9 @@ Uvect_Mos U1 = {0, 0, 1, PI / 3 * 4};
 Uvect_Mos U5 = {1, 0, 1, PI / 3 * 5};
 Uvect_Mos U7 = {1, 1, 1, 0};
 
+#define MAX_DUTY    0.95f
+#define Limit_Duty(d)   do{if(d>MAX_DUTY)d=MAX_DUTY;}while(0)
+
 static void SVPWM_Step(CCR_Duty duty)
 {
     SVPWM_TIM->CCRA = duty.ccra * SVPWM_TIM->ARR;
@@ -22,9 +25,12 @@ static void SVPWM_Step(CCR_Duty duty)
 void Set_Vector(Uvect_Mos u, float duty)
 {
     CCR_Duty temp_duty = {0};
-    if(duty>0.95f){
-        duty=0.95f;
+    Limit_Duty(duty);
+    /*
+    if(duty>MAX_DUTY){
+        duty=MAX_DUTY;
     }
+    */
 
     temp_duty.ccra = u.a * duty; //011
     temp_duty.ccrb = u.b * duty;
@@ -158,9 +164,39 @@ void SVPWM(float Target_U, float duty)
     uint8_t area = get_area(Target_U);
     get_area_u(area, &u1, &u2);
     arm_sin_cos_f32(Target_U, &y, &x);
+    Limit_Duty(duty);
+    x*=duty;
+    y*=duty;
+    /*
     x *= 0.86f * duty;
     y *= 0.86f * duty; // sqrt(3)/2 没错
+    */
+    // 之所要乘以0.86f，是因为最大只能到六边形的内接圆中
+    /*
+                ----------
+               /          \
+              /            \
+             /              \
+             \              /
+              \            /
+               \----------/
+    */
+    // 但是这样有个问题，将所有的期望电压矢量都缩小为原来的0.86倍，相当于这把还没到内接圆的电压矢量也缩小
+    // 另一个方法是将最大电压矢量缩小为原来的0.86倍，期望电压不变，这样也可以保证电压矢量都落在内接圆中
+
+    // 目前采用将最大电压矢量缩小为0.86倍的做法
     SVPWM_Normal_CalT1T2(x, y, area, &t1, &t2);
     CCR_Dutys = Get_CCR_Duty(t1, t2, u1, u2);
     SVPWM_Step(CCR_Dutys);
+}
+
+
+void SVPWM_Alpha_Beta(float Ualpha,float Ubeta,float vbat){
+    float Uref = sqrtf(Ualpha*Ualpha+Ubeta*Ubeta);
+    float target_theta= atan2f(Ubeta,Ualpha)*180.0f/3.1415926f;
+    if(target_theta<0){   // change angle from range [-180,180] to [0,360]
+        target_theta+=360;
+    }
+    float max_v_in_alpha_beta= vbat * 2.0f/3.0f*0.86f;   // vbat * 2/3 * sqrt(3)/2;
+    SVPWM(target_theta,Uref/max_v_in_alpha_beta);
 }

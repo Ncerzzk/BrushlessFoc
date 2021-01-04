@@ -31,6 +31,7 @@ extern PID_S Id_PID;
 extern PID_S Iq_PID;
 extern PID_S Speed_PID;
 extern PID_S Position_PID;
+extern PID_S Special_Id_PID;
 
 void Foc_Init();
 extern float Id_Set;

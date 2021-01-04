@@ -147,6 +147,7 @@ void Error_Handler(void);
 
 #define DAC_AS_VREF
 //#define USE_GYRO
+#define AS_SPI_SLAVE
 
 #define LED_GREEN_Pin GPIO_PIN_9
 #define LED_GREEN_GPIO_Port GPIOC
@@ -183,6 +184,9 @@ void Error_Handler(void);
 #define SOFT_I2C_SDA_PIN  GPIO_PIN_6
 #define SOFT_I2C_SDA_PORT GPIOA
 
+#define SLAVE_CSN_PIN  GPIO_PIN_4
+#define SLAVE_CSN_PORT GPIOC
+
 
 #endif
 
@@ -193,6 +197,12 @@ void Error_Handler(void);
 #define TIM7_FREQ 1000
 #define SPEED_FREQ 4000
 #define POSITION_FREQ 4000
+#define ADC_FREQ      21000000
+#define FOC_TIM_FREQ  168000000
+#define FOC_TIM_PERIOD FOC_TIM_FREQ/FOC_FREQ/2
+
+#define One_ADC_Cycles_Equal_TIM_Cycles     FOC_TIM_FREQ/ADC_FREQ
+#define ADC_Offset One_ADC_Cycles_Equal_TIM_Cycles*3*15
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

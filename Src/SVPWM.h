@@ -27,4 +27,5 @@ typedef struct
 extern  Uvect_Mos U0,U1,U2,U3,U4,U5,U6,U7;
 void SVPWM(float Target_U, float duty);
 void Set_Vector(Uvect_Mos u, float duty);
+void SVPWM_Alpha_Beta(float Ualpha,float Ubeta,float vbat);
 #endif

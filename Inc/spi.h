@@ -31,6 +31,7 @@
 /* USER CODE END Includes */
 
 extern SPI_HandleTypeDef hspi3;
+extern SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN Private defines */
 
@@ -40,6 +41,7 @@ void MX_SPI3_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+void MX_SPI1_Init(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

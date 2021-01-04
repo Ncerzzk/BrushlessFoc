@@ -39,6 +39,11 @@
 #include "dac.h"
 #include "utils.h"
 
+#ifdef AS_SPI_SLAVE
+#include "spi_slave.h"
+#include "foc_spi_com.h"
+#endif
+
 #ifdef USE_GYRO
 #include "soft_i2c.h"
 #include "icm20600.h"
@@ -56,6 +61,8 @@ extern const uint8_t voice[];
 uint8_t Init_OK=0;
 uint8_t Ms_5_Flag=0;
 void Angle_Handler();
+
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -142,6 +149,12 @@ int main(void)
   #ifdef USE_GYRO
   Soft_I2C_Init(SOFT_I2C_SCL_PORT,SOFT_I2C_SCL_PIN,SOFT_I2C_SDA_PORT,SOFT_I2C_SDA_PIN);
   MPU9250_Init(&MPU9250); 
+  #endif
+
+  #ifdef AS_SPI_SLAVE
+  MX_SPI1_Init();
+  //SPI_Slave_Init(&hspi1,11);
+  SPI_Com_Init();
   #endif
 
   //Song_Init(&htim7,5000,0.3f,voice,297973);

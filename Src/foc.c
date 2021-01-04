@@ -57,6 +57,7 @@ Motor_Parameter Motor = {7, 123.748848f, 0};
 Mode Board_Mode=DUTY;
 Mode Last_Mode=DUTY;
 
+uint8_t Measure_Res_Flag=0;
 //uint8_t Encoder_Direction = 0;
 
 float Id_Set=0;
@@ -67,13 +68,27 @@ float Position_Offset = 132;
 // This var is used to align the offset of propeller. 旋翼头的零点
 // 定义该零点为
 /*
-
+左电机：(逆时针转)
         /------------------/
       /------------------/
     /------------------/
   /------------------/
 
+右电机:(顺时针转)
+    \----------------\
+     \----------------\ 
+      \----------------\
+       \----------------\
+
+此时的力矩是向前翻滚
 */
+
+struct{
+    float i_sum;
+    float u_sum;   
+    int cnt;
+}Measure_Sample;
+
 
 PID_S Id_PID ={
     .KP=2,
@@ -81,15 +96,25 @@ PID_S Id_PID ={
     .KI=2,
     .I_TIME=  1.0f/FOC_FREQ,
     .i_max = __FLT_MAX__,
-    .I_ERR_LIMIT = 0.3f
+    .I_ERR_LIMIT =__FLT_MAX__,
     };
+
+PID_S Special_Id_PID={
+    .KP=0,
+    .KD=0,
+    .KI=0,
+    .I_TIME=  1.0f/FOC_FREQ,
+    .i_max = __FLT_MAX__,
+    .I_ERR_LIMIT =__FLT_MAX__,
+};
+
 PID_S Iq_PID = {
     .KP=2,
     .KD=0,
     .KI=1.5,
     .I_TIME=  1.0f/FOC_FREQ,
     .i_max = __FLT_MAX__,
-    .I_ERR_LIMIT = 0.3f
+    .I_ERR_LIMIT = __FLT_MAX__, 
     }; // 启动电流挺大的
 
 PID_S Speed_PID={
@@ -199,11 +224,11 @@ void Foc_Init(){
   #endif
   Current_ADC_Init(20);
 
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
   /* DMA2_Stream2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+  //HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);  与SLAVE_SPI冲突了
+  //HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
 
   HAL_TIM_Base_Start_IT(&htim7);
 }
@@ -225,7 +250,9 @@ void Clark_Conv(float ia, float ic, float *ialpha, float *ibeta)
     *ialpha = ia;
     *ibeta = SQRT3_3 * ib + SQRT3_3* (ib + ia); 
     // 恒幅值变换
-    // 为什么要恒幅值变换？使变换出来的两轴信号平方和，与原来的信号幅值相同
+    // 为什么要恒幅值变换？使变换出来的两轴信号平方和开根号，与原来的信号幅值相同
+    // 好处是这样计算电阻这些参数可以直接用两轴信号平方和开根号来作为电压
+    // 坏处是功率变换前和变换后就不守恒了，不过暂时没什么地方用到功率
 }
 
 void Park_Conv(float ialpha,float ibeta,float theta,float *iq,float *id){
@@ -244,34 +271,42 @@ void Reverse_Park_Conv(float q,float d,float theta,float *alpha,float *beta){
     *alpha = d*cos -q*sin;
 }
 
+
+
 void Current_Control(){
     float Ud=PID_Control(&Id_PID,Id_Set,id);
     float Uq=PID_Control(&Iq_PID,Iq_Set,iq);
 
     float Ualpha,Ubeta;
     Reverse_Park_Conv(Uq,Ud,Position_Phase_Degree,&Ualpha,&Ubeta);
+    /*
     float target_theta= atan2f(Ubeta,Ualpha)*180.0f/3.1415926f;
     if(target_theta<0){
         target_theta+=360;
     }
     float length = sqrtf(Ualpha*Ualpha+Ubeta*Ubeta);
+
+    
     
     if(length>8){
         length=8;
     }
     
-
-    float phase=(int)Position_Phase_Degree%360;
-    //SVPWM(Position_Phase_Degree+90,0.1);
-
-    
-    //uprintf("%f %f",target_theta,length);
     SVPWM(target_theta,length/8.0f);  //8V = 12V *2/3;
+    */
+   SVPWM_Alpha_Beta(Ualpha,Ubeta,input_voltage);
+   if(Measure_Res_Flag){
+       float u = sqrtf(Ualpha*Ualpha+Ubeta*Ubeta);
+       float i = sqrtf(iq*iq+id*id);
+       Measure_Sample.i_sum+=i;
+       Measure_Sample.u_sum+=u;
+       Measure_Sample.cnt++;
+   }
 }
 
 
 #define GET_CURRENT(x)     (GET_SHUNT_VOLTAGE(current_adc_offset[x],current_adc_value[x])/SHUNT_RES)
-
+#define Limit(value,max)     if(value>max)value=max;else if(value<-max)value=-max
 const int Speed_Control_CNT_MAX = FOC_FREQ/SPEED_FREQ;
 const int Position_Control_CNT_MAX = FOC_FREQ/POSITION_FREQ;
 
@@ -301,11 +336,11 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
         UTILS_LP_FAST(current[0],GET_CURRENT(0),0.1);
         UTILS_LP_FAST(current[1],GET_CURRENT(1),0.1);
 
-        input_voltage = ADCVAL_TO_VOLTAGE(current_adc_value[2])*(VOLTAGE_RES1+VOLTAGE_RES2)/VOLTAGE_RES2;
+        UTILS_LP_FAST(input_voltage,ADCVAL_TO_VOLTAGE(current_adc_value[2])*(VOLTAGE_RES1+VOLTAGE_RES2)/VOLTAGE_RES2,0.1f);
 
         Clark_Conv(current[1],current[0],&ialpha,&ibeta);
     
-        Position = Get_Position();
+        Position = Get_Position();   
         Get_Speed();
         Position_Degree = Position_to_Rad_Dgree(Position,1);
         Position_Phase_Degree = Position_Degree * Motor.Pairs-Motor.Position_Phase_Offset;
@@ -324,8 +359,10 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
                 Current_Control();
             }else if(Board_Mode == DUTY){
                 float duty = Base_Duty + Duty_Amp * arm_cos_f32((Position_Degree-Position_Offset-Phi)/180.0f*3.1415926f);
-                //send_wave(duty*1000,(Position_Degree-Position_Offset-Phi),Position_Degree,Speed/5);
-                SVPWM(Position_Phase_Degree+90,duty);
+                float out = PID_Control(&Special_Id_PID,0,id);
+                Limit(out,20); 
+                float leading_angle = 90 - out;  // 超前角度
+                SVPWM(Position_Phase_Degree+leading_angle,duty);
             }
         }else{
             if(Board_Mode!=TEST)
@@ -334,20 +371,12 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
         send_debug_wave(&wg1);
         send_debug_wave(&wg2);
 
-        //if(Wave_Flag)
-        //    send_wave(Position_Degree,Position_Phase_Degree,Speed,iq);
-/*
-        if(FOC_Flag){
-            
-            //
-            //send_wave(current[0],current[1],id,iq);
-        }else{
-            Set_Vector(U0,0.1f); 
-        }
-        */
+        send_debug_wave(&wg3);
+
     }
 }
 
+#define TEST_DUTY   0.086f
 void Test_Direction(){
     uint16_t last_pos=Position;
     Mode old_mode;
@@ -378,23 +407,63 @@ void Test_Direction(){
     Board_Mode = old_mode;
 }
 
+
+
 void Measure_Res(){
-    Mode old_mode;
-    old_mode = Board_Mode;
+    Mode old_mode = Board_Mode;
+    Motor_Parameter old_motor_parameters = Motor;
+    PID_S old_Iq_PID,old_Id_PID;
+
+    old_Id_PID = Id_PID;
+    old_Iq_PID = Iq_PID;
+
+    Measure_Sample.i_sum=0;
+    Measure_Sample.u_sum=0;
+    Measure_Sample.cnt=0;
+
+    Motor.Pairs = 0 ;
+    Motor.Position_Phase_Offset = 0; // do so to cancel the park_conv, then the iq = ibeta, id = ialpha
+    
+    Id_Set=0;
+    Iq_Set=0.5;
+
+    Id_PID.KI = 1.0f;
+    Id_PID.KP = 0.5f;
+
+    Iq_PID = Id_PID;
+
     Board_Mode = CURRENT; 
+    FOC_Flag=1;
+    
+    HAL_Delay(500);
 
+    Measure_Res_Flag=1;
 
+    HAL_Delay(500);
 
-    Set_Vector(U4,0.1f);
+    Measure_Res_Flag=0;
+    FOC_Flag=0;
+
+    Board_Mode = old_mode;
+    Motor=old_motor_parameters;
+    Id_PID = old_Id_PID;
+    Iq_PID = old_Iq_PID;
+
+    float res = Measure_Sample.u_sum / Measure_Sample.i_sum *2.0/3.0f;
+    uprintf_polling("res = %f\r\n",res);
+
 }
 
 inline void Rotate_Phase(float start,float stop,float step){
     for(float phase = start;phase<stop;phase+=step){
-        SVPWM(phase,0.1f);
+        SVPWM(phase,TEST_DUTY);
         HAL_Delay(1);
     }
 }
 
+
+#define Test_Phase 120.0f
+#define Rotate_Time 500 //ms
 void Detect_Encoder(){ 
     // 检测磁编码器静态误差
     // 检测电角度与机械角度的偏移
@@ -412,15 +481,15 @@ void Detect_Encoder(){
         HAL_Delay(1);
         uprintf_polling("pos:%d\r\n",Position);
     }
-    Rotate_Phase(0,360,360.0f/1000);
+    Rotate_Phase(0,360,360.0f/Rotate_Time);
     Set_Vector(U0,0.1);
     HAL_Delay(10);
     uprintf_polling("rotate to syn,and the phase pos_degree is %f\r\n",Position_Phase_Degree);
     last_position = Position_Degree;
     for(int i=0;i<21;++i){  // 3个一圈电角度，21个一圈机械角度
-        Rotate_Phase(i*120,(i+1)*120,120/500.0f);
+        Rotate_Phase(i*Test_Phase,(i+1)*Test_Phase,Test_Phase/Rotate_Time);
         float sin,cos;
-        float off_temp = Position_Phase_Degree - (i+1)*120;
+        float off_temp = Position_Phase_Degree - (i+1)*Test_Phase;
         arm_sin_cos_f32(off_temp,&sin,&cos);
         sin_sum+=sin;
         cos_sum+=cos;
@@ -435,8 +504,10 @@ void Detect_Encoder(){
     }
     Set_Vector(U0,0.1);
     Motor.Position_Phase_Offset=atan2f(sin_sum,cos_sum)*180/3.1415926f;
+    Motor.Pairs = (int)(Test_Phase*21/m_sub+0.5f);
+    //Motor.Position_Phase_Offset = 5581.0f;
     uprintf_polling("the offset is %f \r\n",Motor.Position_Phase_Offset);
-    uprintf_polling("the paris %f\r\n",120.0f*21/m_sub);
+    uprintf_polling("the paris %d\r\n",Motor.Pairs);
 
     Board_Mode = old_mode;
 }

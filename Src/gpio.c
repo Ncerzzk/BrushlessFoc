@@ -64,9 +64,6 @@ void MX_GPIO_Init(void)
 
   GPIO_InitStruct.Pin = EN_GATE_Pin; 
   HAL_GPIO_Init(EN_GATE_GPIO_Port, &GPIO_InitStruct); 
-
-
-  
   #endif
 
   #ifdef ENCODER_SOFT_SPI
@@ -102,21 +99,7 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(CAMERA_EXP_GPIO_Port, &GPIO_InitStruct); 
   #endif
-  //HAL_GPIO_WritePin(GPIOC, ENCODER_MOSI_Pin|LED_GREEN_Pin|LED_RED_Pin|EN_GATE_Pin 
-  //                        |ENCODER_CSN_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  //HAL_GPIO_WritePin(GPIOB, DC_CAL_Pin|ENCODER_CLK_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : PCPin PCPin PCPin PCPin 
-                           PCPin */
-                           /*
-  GPIO_InitStruct.Pin = ENCODER_MOSI_Pin|LED_GREEN_Pin|LED_RED_Pin|EN_GATE_Pin 
-                          |ENCODER_CSN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);*/
 
   GPIO_InitStruct.Pin = LED_GREEN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -127,23 +110,17 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = ENCODER_CSN_Pin; 
   HAL_GPIO_Init(ENCODER_CSN_GPIO_Port, &GPIO_InitStruct); 
 
-
-  /*Configure GPIO pins : PBPin PBPin */
-  /*
-  GPIO_InitStruct.Pin = DC_CAL_Pin|ENCODER_CLK_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-  */
-
-  /*Configure GPIO pins : PBPin PBPin */
-  /*
-  GPIO_InitStruct.Pin = FAULT_Pin|ENCODER_MISO_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+#ifdef AS_SPI_SLAVE
+  GPIO_InitStruct.Pin = SLAVE_CSN_PIN;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-*/
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(SLAVE_CSN_PORT, &GPIO_InitStruct);  
+
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+#endif
+
 }
 
 /* USER CODE BEGIN 2 */

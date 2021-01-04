@@ -23,6 +23,7 @@ Var_Edit_Struct Var_List[]={
   {"duty_amp",&Duty_Amp},
   {"phi",&Phi},
   {"pos_off",&Position_Offset},
+  {"syn_off",&Motor.Position_Phase_Offset},
   #ifdef CAMERA_SUPPORT
   {"camera",&Camera_Catch_Angle}
   #endif
@@ -49,9 +50,13 @@ static void test(int arg_num,char **string_prams,float * arg){
 
 void set_val(int arg_num,char ** s,float * args){
   void * edit_value;
-  if(arg_num!=0x0201){
-    uprintf("error arg_num!\r\n");
-    return ;
+  uint8_t write=0;
+  if(arg_num!=0x0201 && arg_num!=0x0200){
+    ERROR_PARAGRAM();
+  }
+
+  if(arg_num==0x0201){
+    write=1;
   }
 
   for(int i=0;i<sizeof(Var_List)/sizeof(Var_Edit_Struct);++i){
@@ -62,13 +67,16 @@ void set_val(int arg_num,char ** s,float * args){
   }
   
   if(compare_string(s[1],"u8")){
-    *(uint8_t *)edit_value=(uint8_t)args[0];
+    if(write)
+      *(uint8_t *)edit_value=(uint8_t)args[0];
     uprintf("ok set %s = %d\r\n",s[0],*(uint8_t *)edit_value);  
   }else if(compare_string(s[1],"int")){
-    *(int16_t *)edit_value=(int16_t)args[0];
+    if(write)
+      *(int16_t *)edit_value=(int16_t)args[0];
     uprintf("ok set %s = %d\r\n",s[0],*(int16_t *)edit_value);
   }else if(compare_string(s[1],"f")){
-    *(float *)edit_value=args[0];
+    if(write)
+      *(float *)edit_value=args[0];
     uprintf("ok set %s = %f\r\n",s[0],*(float *)edit_value);
   }
 }
@@ -120,6 +128,7 @@ void start(int arg_num,char **s,float *args){
     Id_PID.i=0;
     Speed_PID.i=0;
     Position_PID.i=0;
+    Special_Id_PID.i=0;
     #ifdef USE_GYRO
     Angle_PID.i=0;
     #endif
@@ -143,6 +152,11 @@ void song(int arg_num,char **s,float *args){
   uprintf_polling("OK,song = %d\r\n",Song_Start);
 }
 */
+extern void Measure_Res();
+void measure_res(int arg_num,char **s,float *args){
+  uprintf_polling("OK,start to measure Res!\r\n");
+  Measure_Res();
+}
 
 #include "parameter.h"
 void wrtie_param(int arg_num,char **s,float *args){
@@ -171,6 +185,8 @@ void set_PID(int arg_num,char ** s,float * args){
     pid_s=&Id_PID;
   }else if(compare_string(s[0],"q")){
     pid_s=&Iq_PID;
+  }else if(compare_string(s[0],"sd")){  // speical id
+    pid_s=&Special_Id_PID;
   }else if(compare_string(s[0],"sp")){
     pid_s=&Speed_PID;
   }else if(compare_string(s[0],"pos")){
@@ -218,6 +234,20 @@ void set_mode(int arg_num,char **s,float *args){
   }
 }
 
+void set_pos_off_here(int arg_num,char **s,float *args){
+  if(arg_num!=0x0000){
+    ERROR_PARAGRAM();
+  }
+  Position_Offset = Position_Degree;
+  uprintf("ok pos_off = %f\r\n",Position_Offset);
+}
+
+#ifdef AS_SPI_SLAVE
+#include "foc_spi_com.h"
+void test_spi_com(int arg_num,char **s,float *args){
+  uprintf_polling("val 1 2 3 = %d %d %f\r\n",SPI_Slave_Test,SPI_Slave_Test2,SPI_Slave_Test3);
+}
+#endif
 /*
 将要增加的命令与函数写在这里
 */
@@ -231,12 +261,18 @@ void command_init(void){
   add_cmd("set_pid",set_PID);
   add_cmd("write",wrtie_param);
   add_cmd("wave",wave);
+  add_cmd("pos_off_here",set_pos_off_here);
   #ifdef CAMERA_SUPPORT
   add_cmd("camera",camera);
   #endif
   add_cmd("pos",position);
   add_cmd("set_mode",set_mode);
+
+  add_cmd("measure_res",measure_res);
+
+  #ifdef AS_SPI_SLAVE
+  add_cmd("test_spi",test_spi_com);
+  #endif
   //add_cmd("song",song);
 }
-
 
