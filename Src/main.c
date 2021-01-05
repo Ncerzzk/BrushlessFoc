@@ -123,6 +123,7 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_ADC2_Init();
+  MX_ADC3_Init();
 #ifdef DAC_AS_VREF
   MX_DAC_Init();
 #endif

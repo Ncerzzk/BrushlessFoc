@@ -202,7 +202,8 @@ void Error_Handler(void);
 #define FOC_TIM_PERIOD FOC_TIM_FREQ/FOC_FREQ/2
 
 #define One_ADC_Cycles_Equal_TIM_Cycles     FOC_TIM_FREQ/ADC_FREQ
-#define ADC_Offset One_ADC_Cycles_Equal_TIM_Cycles*3*15
+//#define ADC_Offset One_ADC_Cycles_Equal_TIM_Cycles*3*15
+#define ADC_Offset One_ADC_Cycles_Equal_TIM_Cycles*1*(15+12)
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

@@ -14,7 +14,7 @@ Uvect_Mos U7 = {1, 1, 1, 0};
 #define MAX_DUTY    0.95f
 #define Limit_Duty(d)   do{if(d>MAX_DUTY)d=MAX_DUTY;}while(0)
 
-static void SVPWM_Step(CCR_Duty duty)
+void SVPWM_Step(CCR_Duty duty)
 {
     SVPWM_TIM->CCRA = duty.ccra * SVPWM_TIM->ARR;
     SVPWM_TIM->CCRB = duty.ccrb * SVPWM_TIM->ARR;

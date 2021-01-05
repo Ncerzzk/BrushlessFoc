@@ -50,6 +50,11 @@ float Speed_Set=3000.0f;  // 单位：机械角度/s
 int16_t current_adc_value[3]={0};
 int16_t current_adc_offset[2]={0};
 float current[2]={0};
+
+#define CURR_A_INDEX 1
+#define CURR_C_INDEX 0
+
+
 float input_voltage=0;
 float ialpha,ibeta,id,iq;
 
@@ -58,6 +63,7 @@ Mode Board_Mode=DUTY;
 Mode Last_Mode=DUTY;
 
 uint8_t Measure_Res_Flag=0;
+uint8_t Measure_Ind_Flag=0;
 //uint8_t Encoder_Direction = 0;
 
 float Id_Set=0;
@@ -83,10 +89,14 @@ float Position_Offset = 132;
 此时的力矩是向前翻滚
 */
 
-struct{
+struct masure_sample{
     float i_sum;
     float u_sum;   
     int cnt;
+
+    float measure_ind_duty; // used in measure ind;
+    float now_ind_avg_current; // used in measure ind;
+    float measure_ind_state; // special used in measure ind;
 }Measure_Sample;
 
 
@@ -138,6 +148,7 @@ uint8_t FOC_Flag=0;
 
 static void Speed_Control();
 static void Position_Control();
+void Measure_Ind_Handler();
 
 void PID_I_Clear(){
     Iq_PID.i=0;
@@ -206,7 +217,15 @@ void Current_ADC_Init(int times){
 
 void Foc_Init(){
   AS5047_Set_Direction(Motor.Encoder_Direction);
-  HAL_ADC_Start_DMA(&hadc1,current_adc_value,3);
+  
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+
+  //HAL_ADC_Start_DMA(&hadc1,current_adc_value,3);
+  HAL_ADC_Start(&hadc3);
+  HAL_ADC_Start(&hadc2);
+
+  HAL_ADCEx_MultiModeStart_DMA(&hadc1,(uint32_t *)current_adc_value,3);
 
   HAL_TIM_Base_Start(&htim8);
 
@@ -224,8 +243,8 @@ void Foc_Init(){
   #endif
   Current_ADC_Init(20);
 
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 2, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+  //HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 2, 0);
+  //HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
   /* DMA2_Stream2_IRQn interrupt configuration */
   //HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);  与SLAVE_SPI冲突了
   //HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
@@ -279,29 +298,15 @@ void Current_Control(){
 
     float Ualpha,Ubeta;
     Reverse_Park_Conv(Uq,Ud,Position_Phase_Degree,&Ualpha,&Ubeta);
-    /*
-    float target_theta= atan2f(Ubeta,Ualpha)*180.0f/3.1415926f;
-    if(target_theta<0){
-        target_theta+=360;
-    }
-    float length = sqrtf(Ualpha*Ualpha+Ubeta*Ubeta);
 
-    
-    
-    if(length>8){
-        length=8;
+    SVPWM_Alpha_Beta(Ualpha,Ubeta,input_voltage);
+    if(Measure_Res_Flag){
+        float u = sqrtf(Ualpha*Ualpha+Ubeta*Ubeta);
+        float i = sqrtf(iq*iq+id*id);
+        Measure_Sample.i_sum+=i;
+        Measure_Sample.u_sum+=u;
+        Measure_Sample.cnt++;
     }
-    
-    SVPWM(target_theta,length/8.0f);  //8V = 12V *2/3;
-    */
-   SVPWM_Alpha_Beta(Ualpha,Ubeta,input_voltage);
-   if(Measure_Res_Flag){
-       float u = sqrtf(Ualpha*Ualpha+Ubeta*Ubeta);
-       float i = sqrtf(iq*iq+id*id);
-       Measure_Sample.i_sum+=i;
-       Measure_Sample.u_sum+=u;
-       Measure_Sample.cnt++;
-   }
 }
 
 
@@ -312,7 +317,6 @@ const int Position_Control_CNT_MAX = FOC_FREQ/POSITION_FREQ;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
     float temp_iq,temp_id;
-    float temp_current,temp_current1;
     static int current_control_cnt=0;
 
     if(hadc->Instance==CURRENT_ADC){
@@ -373,6 +377,8 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 
         send_debug_wave(&wg3);
 
+        if(Measure_Ind_Flag)
+            Measure_Ind_Handler();
     }
 }
 
@@ -407,9 +413,57 @@ void Test_Direction(){
     Board_Mode = old_mode;
 }
 
+void Measure_Ind_Handler(){
+    float now_duty = Measure_Sample.measure_ind_duty;
+    TIM8->CCR1 = TIM1->ARR*now_duty;
+    CCR_Duty temp_ccr={0};
 
+    if(Measure_Sample.measure_ind_state<5){
+        temp_ccr.ccra=0;
+        temp_ccr.ccrb=0;
+        temp_ccr.ccrc=0;
+        SVPWM_Step(temp_ccr);
+    }else if(Measure_Sample.measure_ind_state==5){
+        temp_ccr.ccra = temp_ccr.ccrc = now_duty;
+        temp_ccr.ccrc = 0;
+        SVPWM_Step(temp_ccr);
+    }else if(Measure_Sample.measure_ind_state==6){
+        Measure_Sample.i_sum += fabsf(GET_CURRENT(CURR_A_INDEX));
+        Measure_Sample.u_sum += input_voltage;
+        Measure_Sample.cnt ++;
+        temp_ccr.ccra = temp_ccr.ccrb = temp_ccr.ccrc =0;
+        SVPWM_Step(temp_ccr);
+    }else if(Measure_Sample.measure_ind_state==11){
+        temp_ccr.ccrb = temp_ccr.ccrc = now_duty;
+        temp_ccr.ccra = 0;
+        SVPWM_Step(temp_ccr);
+    }else if(Measure_Sample.measure_ind_state==12){
+        Measure_Sample.i_sum += fabsf(GET_CURRENT(CURR_C_INDEX));
+        Measure_Sample.u_sum += input_voltage;
+        Measure_Sample.cnt ++;
 
-void Measure_Res(){
+        temp_ccr.ccra = temp_ccr.ccrb = temp_ccr.ccrc =0;
+        SVPWM_Step(temp_ccr);
+    }else if(Measure_Sample.measure_ind_state==17){
+        temp_ccr.ccra = temp_ccr.ccrc = now_duty;
+        temp_ccr.ccra = 0;
+        SVPWM_Step(temp_ccr);
+    }else if(Measure_Sample.measure_ind_state==18){
+        Measure_Sample.i_sum += fabsf(GET_CURRENT(CURR_C_INDEX)) + fabsf(GET_CURRENT(CURR_A_INDEX));
+        Measure_Sample.u_sum += input_voltage;
+        Measure_Sample.cnt ++;
+
+        temp_ccr.ccra = temp_ccr.ccrb = temp_ccr.ccrc =0;
+        SVPWM_Step(temp_ccr);
+
+        Measure_Sample.measure_ind_state =0;
+        return ;
+    }
+
+    Measure_Sample.measure_ind_state++;
+}
+
+float Measure_Res(){
     Mode old_mode = Board_Mode;
     Motor_Parameter old_motor_parameters = Motor;
     PID_S old_Iq_PID,old_Id_PID;
@@ -449,9 +503,84 @@ void Measure_Res(){
     Id_PID = old_Id_PID;
     Iq_PID = old_Iq_PID;
 
-    float res = Measure_Sample.u_sum / Measure_Sample.i_sum *2.0/3.0f;
+    float res = Measure_Sample.u_sum / Measure_Sample.i_sum *2.0/3.0f;    
     uprintf_polling("res = %f\r\n",res);
 
+    return res;
+}
+
+void Measure_Ind(){
+    uint32_t old_ARR = TIM1->ARR;
+    Mode old_Mode = Board_Mode;
+    float res=0;
+    float freq = 1500;
+    float target_current = 0;
+
+    res = Measure_Res();
+    target_current = 0.5f / res;          //本来用1V/res ，现在先用0.5试试吧
+
+    if(target_current > 5){
+        uprintf_polling("there may be some problems when measuring res! the target current to measure ind is over 5A!\r\n");
+        if(target_current >10){
+            uprintf_polling("the target current is over 10A! auto stop now.\r\n");
+            return ;
+        }
+    }
+
+    Measure_Sample.i_sum =0;
+    Measure_Sample.u_sum =0;
+    Measure_Sample.cnt=0;
+    Measure_Sample.now_ind_avg_current =0;
+    Measure_Sample.measure_ind_state = 0;
+    Measure_Sample.measure_ind_duty = 0;
+    //dt =0.0001139
+    //u = 11.4
+    //di = 6
+    // L = u*dt/di = 11.4*0.001
+    TIM1->ARR= FOC_TIM_FREQ/freq/2;
+    Board_Mode = TEST;
+    Measure_Ind_Flag = 1;
+    FOC_Flag=1;
+
+    uint32_t old_tick = HAL_GetTick();
+    Measure_Sample.measure_ind_duty =0.02;
+    while(Measure_Sample.now_ind_avg_current < target_current && HAL_GetTick()<old_tick+2000){
+        if(Measure_Sample.cnt==12){ 
+            float temp_u=Measure_Sample.u_sum/12.0f;
+            Measure_Sample.now_ind_avg_current = Measure_Sample.i_sum / 12.0f;
+            HAL_NVIC_DisableIRQ(DMA2_Stream0_IRQn);
+            Measure_Sample.cnt=0;
+            Measure_Sample.u_sum=Measure_Sample.i_sum=0;
+            HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+            Measure_Sample.measure_ind_duty*=1.5;
+            uprintf("avg_cur:%f  avg_vol:%f   duty:%f\r\n",Measure_Sample.now_ind_avg_current,temp_u,Measure_Sample.measure_ind_duty);
+        }
+        
+        if(Measure_Sample.measure_ind_duty>0.5f){
+            uprintf_polling("there may be some problems that the measure_ind_duty is over 50! it's %f \r\n",Measure_Sample.measure_ind_duty);
+            goto FINISH;
+        }
+    }
+            
+    HAL_NVIC_DisableIRQ(DMA2_Stream0_IRQn);
+    Measure_Sample.cnt=Measure_Sample.u_sum=Measure_Sample.i_sum=0;
+    Measure_Sample.measure_ind_state=0;
+    HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+
+    while(Measure_Sample.cnt<100);
+    float di = Measure_Sample.i_sum/100.0f;
+    float u = Measure_Sample.u_sum/100.0f;
+    float dt = TIM1->ARR*Measure_Sample.measure_ind_duty/FOC_TIM_FREQ;
+    float L = u*dt/di;
+
+    uprintf_polling("di:%f,u:%f,dt:%f,ind:%f \r\n",di,u,dt,L);
+
+FINISH:
+    FOC_Flag=0;
+    Measure_Ind_Flag=0; 
+    Board_Mode = old_Mode;
+    TIM1->ARR = old_ARR;
+    TIM8->CCR1 = TIM1->ARR-ADC_Offset/2;
 }
 
 inline void Rotate_Phase(float start,float stop,float step){

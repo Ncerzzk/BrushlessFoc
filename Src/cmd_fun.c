@@ -152,10 +152,16 @@ void song(int arg_num,char **s,float *args){
   uprintf_polling("OK,song = %d\r\n",Song_Start);
 }
 */
-extern void Measure_Res();
+extern float Measure_Res();
+extern void Measure_Ind();
 void measure_res(int arg_num,char **s,float *args){
   uprintf_polling("OK,start to measure Res!\r\n");
   Measure_Res();
+}
+
+void measure_ind(int arg,char **s,float *args){
+  uprintf_polling("OK,start to measure Ind!\r\n");
+  Measure_Ind();
 }
 
 #include "parameter.h"
@@ -269,6 +275,7 @@ void command_init(void){
   add_cmd("set_mode",set_mode);
 
   add_cmd("measure_res",measure_res);
+  add_cmd("measure_ind",measure_ind);
 
   #ifdef AS_SPI_SLAVE
   add_cmd("test_spi",test_spi_com);
