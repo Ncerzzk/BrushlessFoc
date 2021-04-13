@@ -37,7 +37,7 @@ build_my/main.o: Src/main.c Inc/main.h \
  Inc/main.h Inc/can.h Inc/dma.h Inc/spi.h Inc/tim.h Inc/usart.h \
  Inc/usb_otg.h Inc/gpio.h mylib/uart_ext.h Src/encoder.h mylib/as5047.h \
  Src/foc.h Src/SVPWM.h mylib/pid.h Src/parameter.h Inc/dac.h Inc/utils.h \
- mylib/debug_utils.h mylib/spi_slave.h Src/foc_spi_com.h
+ mylib/debug_utils.h
 
 Inc/main.h:
 
@@ -152,7 +152,3 @@ Inc/dac.h:
 Inc/utils.h:
 
 mylib/debug_utils.h:
-
-mylib/spi_slave.h:
-
-Src/foc_spi_com.h:

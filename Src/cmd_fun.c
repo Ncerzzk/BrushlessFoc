@@ -11,19 +11,30 @@ typedef struct{
   void * value_ptr;
 }Var_Edit_Struct;
 
+extern uint8_t Board_CAN_ID;
+extern float Ka,Kb;
+extern float Lead_Test_In;
 Var_Edit_Struct Var_List[]={
   //{"first",&First_Time_Check}
   {"id",&Id_Set},
   {"iq",&Iq_Set},
+  {"base_uq",&Base_Uq},
+  {"uq_a",&Uq_Amp},
+  {"base_iq",&Base_Iq},
+  {"iq_a",&Iq_Amp},
+  {"lead",&Lead_Test_In},
   {"sp",&Speed_Set},
   {"pos",&Position_Degree_Set},
   {"base_sp",&Base_Speed},
-  {"sp_a",&Speed_Attitude},
+  {"sp_a",&Speed_Amp},
   {"duty",&Base_Duty},
   {"duty_amp",&Duty_Amp},
   {"phi",&Phi},
   {"pos_off",&Position_Offset},
   {"syn_off",&Motor.Position_Phase_Offset},
+  {"can_id",&Board_CAN_ID},
+  {"Ka",&Ka},
+  {"Kb",&Kb}
   #ifdef CAMERA_SUPPORT
   {"camera",&Camera_Catch_Angle}
   #endif
@@ -129,6 +140,7 @@ void start(int arg_num,char **s,float *args){
     Speed_PID.i=0;
     Position_PID.i=0;
     Special_Id_PID.i=0;
+    Special_Speed_PID.i=0;
     #ifdef USE_GYRO
     Angle_PID.i=0;
     #endif
@@ -195,7 +207,10 @@ void set_PID(int arg_num,char ** s,float * args){
     pid_s=&Special_Id_PID;
   }else if(compare_string(s[0],"sp")){
     pid_s=&Speed_PID;
-  }else if(compare_string(s[0],"pos")){
+  }else if(compare_string(s[0],"asp")){
+    pid_s=&Special_Speed_PID;
+  }
+  else if(compare_string(s[0],"pos")){
     pid_s=&Position_PID;
   }
   #ifdef USE_GYRO
@@ -249,9 +264,8 @@ void set_pos_off_here(int arg_num,char **s,float *args){
 }
 
 #ifdef AS_SPI_SLAVE
-#include "foc_spi_com.h"
 void test_spi_com(int arg_num,char **s,float *args){
-  uprintf_polling("val 1 2 3 = %d %d %f\r\n",SPI_Slave_Test,SPI_Slave_Test2,SPI_Slave_Test3);
+  //uprintf_polling("val 1 2 3 = %d %d %f\r\n",SPI_Slave_Test,SPI_Slave_Test2,SPI_Slave_Test3);
 }
 #endif
 /*

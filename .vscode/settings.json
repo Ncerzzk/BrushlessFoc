@@ -2,6 +2,7 @@
     "files.associations": {
         "string_view": "c",
         "random": "c",
-        "limits": "c"
+        "limits": "c",
+        "arm_math.h": "c"
     }
 }

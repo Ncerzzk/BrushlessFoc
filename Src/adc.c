@@ -187,6 +187,7 @@ void MX_ADC3_Init(void)
     Error_Handler();
   }
 
+
 }
 
 void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)

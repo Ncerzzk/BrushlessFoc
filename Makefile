@@ -48,7 +48,7 @@ mylib/soft_i2c.c \
 mylib/icm20600.c \
 mylib/easy_angle.c \
 mylib/debug_utils.c \
-mylib/spi_slave.c \
+mylib/spi_slave_fast.c \
 Src/utils.c \
 Src/gpio.c \
 Src/SVPWM.c \
@@ -58,7 +58,6 @@ Src/arm_sin_f32.c \
 Src/arm_cos_f32.c \
 Src/arm_common_tables.c \
 Src/foc.c \
-Src/foc_spi_com.c \
 Src/cmd_fun.c \
 Src/dac.c \
 Src/adc.c \
@@ -188,6 +187,41 @@ LDSCRIPT = STM32F405RGTx_FLASH.ld
 # libraries
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
+#######################################
+# MY FOC Driver Build
+#######################################
+my: $(BUILD_DIR2)/$(TARGET2).elf $(BUILD_DIR2)/$(TARGET2).hex $(BUILD_DIR2)/$(TARGET2).bin
+LDFLAGS2 = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR2)/$(TARGET2).map,--cref -Wl,--gc-sections
+LDFLAGS2 += -lrdimon -u _printf_float
+
+#######################################
+# build the application
+#######################################
+# list of objects
+OBJECTS2 = $(addprefix $(BUILD_DIR2)/,$(notdir $(C_SOURCES:.c=.o)))
+vpath %.c $(sort $(dir $(C_SOURCES)))
+# list of ASM program objects
+OBJECTS2 += $(addprefix $(BUILD_DIR2)/,$(notdir $(ASM_SOURCES:.s=.o)))
+vpath %.s $(sort $(dir $(ASM_SOURCES)))
+
+$(BUILD_DIR2)/%.o: %.c Makefile | $(BUILD_DIR2) 
+	$(CC) -c $(CFLAGS) -DMYOWN_FOC -Wa,-a,-ad,-alms=$(BUILD_DIR2)/$(notdir $(<:.c=.lst)) $< -o $@
+
+$(BUILD_DIR2)/%.o: %.s Makefile | $(BUILD_DIR2)
+	$(AS) -c $(CFLAGS) $< -o $@
+
+$(BUILD_DIR2)/$(TARGET2).elf: $(OBJECTS2) Makefile
+	$(CC) $(OBJECTS2) $(LDFLAGS2) -o $@
+	$(SZ) $@
+
+$(BUILD_DIR2)/%.hex: $(BUILD_DIR2)/%.elf | $(BUILD_DIR2)
+	$(HEX) $< $@
+	
+$(BUILD_DIR2)/%.bin: $(BUILD_DIR2)/%.elf | $(BUILD_DIR2)
+	$(BIN) $< $@	
+	
+$(BUILD_DIR2):
+	mkdir $@	
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
@@ -224,43 +258,7 @@ $(BUILD_DIR):
 	mkdir $@		
 
 
-#######################################
-# MY FOC Driver Build
-#######################################
-my: $(BUILD_DIR2)/$(TARGET2).elf $(BUILD_DIR2)/$(TARGET2).hex $(BUILD_DIR2)/$(TARGET2).bin
-LDFLAGS2 = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR2)/$(TARGET2).map,--cref -Wl,--gc-sections
-LDFLAGS2 += -lrdimon -u _printf_float
-#######################################
-# build the application
-#######################################
-# list of objects
-OBJECTS2 = $(addprefix $(BUILD_DIR2)/,$(notdir $(C_SOURCES:.c=.o)))
-vpath %.c $(sort $(dir $(C_SOURCES)))
-# list of ASM program objects
-OBJECTS2 += $(addprefix $(BUILD_DIR2)/,$(notdir $(ASM_SOURCES:.s=.o)))
-vpath %.s $(sort $(dir $(ASM_SOURCES)))
-
-$(BUILD_DIR2)/%.o: %.c Makefile | $(BUILD_DIR2) 
-	$(CC) -c $(CFLAGS) -DMYOWN_FOC -Wa,-a,-ad,-alms=$(BUILD_DIR2)/$(notdir $(<:.c=.lst)) $< -o $@
-
-$(BUILD_DIR2)/%.o: %.cpp Makefile | $(BUILD_DIR2) 
-	$(CC) -c $(CFLAGS) -DMYOWN_FOC -Wa,-a,-ad,-alms=$(BUILD_DIR2)/$(notdir $(<:.c=.lst)) $< -o $
-
-$(BUILD_DIR2)/%.o: %.s Makefile | $(BUILD_DIR2)
-	$(AS) -c $(CFLAGS) $< -o $@
-
-$(BUILD_DIR2)/$(TARGET2).elf: $(OBJECTS2) Makefile
-	$(CC) $(OBJECTS2) $(LDFLAGS2) -o $@
-	$(SZ) $@
-
-$(BUILD_DIR2)/%.hex: $(BUILD_DIR2)/%.elf | $(BUILD_DIR2)
-	$(HEX) $< $@
 	
-$(BUILD_DIR2)/%.bin: $(BUILD_DIR2)/%.elf | $(BUILD_DIR2)
-	$(BIN) $< $@	
-	
-$(BUILD_DIR2):
-	mkdir $@		
 #######################################
 # clean up
 #######################################
@@ -272,5 +270,5 @@ clean:
 # dependencies
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
-
+-include $(wildcard $(BUILD_DIR2)/*.d)
 # *** EOF ***

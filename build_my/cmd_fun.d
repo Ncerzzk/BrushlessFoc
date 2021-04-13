@@ -36,8 +36,7 @@ build_my/cmd_fun.o: Src/cmd_fun.c mylib/cmd_fun.h mylib/command.h \
  Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h Src/foc.h \
  Src/SVPWM.h Inc/tim.h Inc/main.h mylib/pid.h Src/parameter.h \
- mylib/debug_utils.h Src/foc_spi_com.h mylib/spi_slave.h Inc/spi.h \
- Inc/gpio.h
+ mylib/debug_utils.h
 
 mylib/cmd_fun.h:
 
@@ -134,11 +133,3 @@ mylib/pid.h:
 Src/parameter.h:
 
 mylib/debug_utils.h:
-
-Src/foc_spi_com.h:
-
-mylib/spi_slave.h:
-
-Inc/spi.h:
-
-Inc/gpio.h:

@@ -147,7 +147,7 @@ void Error_Handler(void);
 
 #define DAC_AS_VREF
 //#define USE_GYRO
-#define AS_SPI_SLAVE
+//#define AS_SPI_SLAVE
 
 #define LED_GREEN_Pin GPIO_PIN_9
 #define LED_GREEN_GPIO_Port GPIOC
@@ -193,9 +193,9 @@ void Error_Handler(void);
 
 
 
-#define FOC_FREQ  8000
+#define FOC_FREQ  20000
 #define TIM7_FREQ 1000
-#define SPEED_FREQ 4000
+#define SPEED_FREQ FOC_FREQ/2
 #define POSITION_FREQ 4000
 #define ADC_FREQ      21000000
 #define FOC_TIM_FREQ  168000000

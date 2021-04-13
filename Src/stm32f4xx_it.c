@@ -65,6 +65,7 @@ extern TIM_HandleTypeDef htim7;
 extern DMA_HandleTypeDef hdma_uart5_rx;
 extern DMA_HandleTypeDef hdma_uart5_tx;
 extern UART_HandleTypeDef huart5;
+extern CAN_HandleTypeDef hcan1;
 
 /* USER CODE BEGIN EV */
 extern void Ms_Handler();
@@ -314,6 +315,12 @@ void DMA2_Stream0_IRQHandler(void)
   /* USER CODE END DMA2_Stream0_IRQn 1 */
 }
 
+void CAN1_RX0_IRQHandler(void)
+{
+  HAL_CAN_IRQHandler(&hcan1);
+}
+
+
 /**
   * @brief This function handles DMA2 stream2 global interrupt.
   */
@@ -363,11 +370,12 @@ void DMA2_Stream3_IRQHandler(void)
 #include "spi_slave.h"
 void EXTI4_IRQHandler(void){
   HAL_GPIO_EXTI_IRQHandler(SLAVE_CSN_PIN);
-  SPI_Slave_CSN_Handler(HAL_GPIO_ReadPin(SLAVE_CSN_PORT,SLAVE_CSN_PIN));
+  //SPI_Slave_CSN_Handler(HAL_GPIO_ReadPin(SLAVE_CSN_PORT,SLAVE_CSN_PIN));
+  SPI_Slave_Fast_CSN_Handler(HAL_GPIO_ReadPin(SLAVE_CSN_PORT,SLAVE_CSN_PIN));
 }
 
 void SPI1_IRQHandler(void){
-  //HAL_SPI_IRQHandler(&hspi1);
+  HAL_SPI_IRQHandler(&hspi1);
 }
 #endif
 /* USER CODE BEGIN 1 */

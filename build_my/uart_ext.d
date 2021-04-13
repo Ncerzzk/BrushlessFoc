@@ -34,7 +34,7 @@ build_my/uart_ext.o: mylib/uart_ext.c Inc/usart.h Inc/main.h \
  Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h mylib/uart_ext.h \
- Inc/main.h mylib/command.h mylib/cmd_fun.h
+ Inc/main.h mylib/command.h mylib/cmd_fun.h mylib/debug_utils.h
 
 Inc/usart.h:
 
@@ -121,3 +121,5 @@ Inc/main.h:
 mylib/command.h:
 
 mylib/cmd_fun.h:
+
+mylib/debug_utils.h:

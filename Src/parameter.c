@@ -6,14 +6,13 @@
 
 #define PARAMETER_FLASH_ADDRESS 0x08040000   // 扇区6 大小128kb
 #define PARAMETER_FLASH_ADDRESS_SECLECTOR FLASH_SECTOR_6
+extern uint8_t Board_CAN_ID;
 
 typedef struct 
 {
     Motor_Parameter motor_info;
-    PID_S id_pid;
-    PID_S iq_pid;
     float position_offset;
-    float phi;
+    uint8_t ID;
 }Flash_Parameters;
 
 #define STR(x)      #x
@@ -26,10 +25,10 @@ void Print_Parameters(Flash_Parameters *p){
     uprintf_polling("Motor paris:%d \r\n",p->motor_info.Pairs);
     uprintf_polling("Encoder offset:%f \r\n",p->motor_info.Position_Phase_Offset);
     uprintf_polling("Encoder direction:%d \r\n ",p->motor_info.Encoder_Direction);
-    Print_PID(STR(Id_PID),&(p->id_pid));
-    Print_PID(STR(Iq_PID),&(p->iq_pid));
+    //Print_PID(STR(Id_PID),&(p->id_pid));
+    //Print_PID(STR(Iq_PID),&(p->iq_pid));
     uprintf_polling("Position Offset:%f\r\n",p->position_offset);
-    uprintf_polling("phi:%f\r\n",p->phi);
+    uprintf_polling("CAN_ID:%d\r\n",p->ID);
 }
 
 void Read_Parameters(uint8_t write_default){
@@ -48,9 +47,9 @@ void Read_Parameters(uint8_t write_default){
     Print_Parameters(&temp);
 
     Motor = temp.motor_info;
-    Id_PID = temp.id_pid;
-    Iq_PID = temp.iq_pid;
-    Phi = temp.phi;
+    //Id_PID = temp.id_pid;
+    //Iq_PID = temp.iq_pid; 
+    Board_CAN_ID = temp.ID;
     Position_Offset = temp.position_offset;
 }
 
@@ -61,10 +60,8 @@ void Write_Parameter(){
 
    Flash_Parameters parameters;
    parameters.motor_info = Motor;
-   parameters.id_pid = Id_PID;
-   parameters.iq_pid = Iq_PID;
    parameters.position_offset = Position_Offset;
-   parameters.phi = Phi;
+   parameters.ID = Board_CAN_ID;
 
    HAL_FLASH_Unlock();
   EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;

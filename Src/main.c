@@ -40,8 +40,10 @@
 #include "utils.h"
 
 #ifdef AS_SPI_SLAVE
-#include "spi_slave.h"
-#include "foc_spi_com.h"
+//#include "spi_slave.h"
+//#include "foc_spi_com.h"
+
+#include "spi_slave_fast.h"
 #endif
 
 #ifdef USE_GYRO
@@ -152,10 +154,12 @@ int main(void)
   MPU9250_Init(&MPU9250); 
   #endif
 
+  MX_CAN1_Init();
   #ifdef AS_SPI_SLAVE
   MX_SPI1_Init();
   //SPI_Slave_Init(&hspi1,11);
-  SPI_Com_Init();
+  //SPI_Com_Init();
+  SPI_Slave_Fast_Init(&hspi1);
   #endif
 
   //Song_Init(&htim7,5000,0.3f,voice,297973);
@@ -173,6 +177,11 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+  #ifdef AS_SPI_SLAVE
+    if(SPI_Slave_Err){
+      //SPI_ERR_Recover();
+    }
+  #endif
     if(buffer_rx_OK){
       UART_Command_Analize_And_Call();
     }
@@ -232,6 +241,12 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+
+
+
+
+
 #ifdef USE_GYRO
 #include "math.h"
 void Ms_Handler(){

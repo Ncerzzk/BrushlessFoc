@@ -39,7 +39,8 @@ extern CAN_HandleTypeDef hcan1;
 void MX_CAN1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void CAN_Send_Message(uint8_t ID,uint8_t * data,uint8_t len);
+uint8_t Board_CAN_ID;
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

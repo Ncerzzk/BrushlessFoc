@@ -14,6 +14,7 @@ extern uint8_t buffer_rx[];
 extern float Position_Degree;
 extern float Position_Offset;
 
+// 以下协议废弃，在发送速度较快的情况下，会以较高频率出现通信异常
 SPI_COM_VAL SPI_Com_Val_List[]={
   {0,(uint32_t *)&SPI_Slave_Test,1},
   {1,(uint32_t *)&SPI_Slave_Test2,2},

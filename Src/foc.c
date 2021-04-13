@@ -30,12 +30,14 @@
 inline void Check_Mode();
 static void Get_Speed();
 
-float Base_Speed=1500.0f;
-float Speed_Attitude=500.0f;
-
 float Base_Duty= 0.1f;
 float Duty_Amp = 0.0f;
 
+float Base_Speed = 10.0f;
+float Speed_Amp=0;
+
+float Base_Iq = 0.0f;
+float Iq_Amp=0;
 
 
 int16_t Position;
@@ -44,7 +46,9 @@ float Position_Degree_Set;
 float Position_Phase_Degree; // 电角度
 
 float Speed;
-float Speed_Set=3000.0f;  // 单位：机械角度/s
+float Speed_Set=0;  // 单位：rps 加入超前相位补偿后的实际给定速度
+//float Speed_Target=0; // 期望设置的速度
+//float Speed_Set_Filter=0;  // 实际给定速度经过极点对消网络后，真正给速度环的速度
 //float Position_Phase_Offset=116.587318f; // 电角度的偏移（编码器与电角度对齐）
 
 int16_t current_adc_value[3]={0};
@@ -55,8 +59,8 @@ float current[2]={0};
 #define CURR_C_INDEX 0
 
 
-float input_voltage=0;
-float ialpha,ibeta,id,iq;
+float Input_Voltage=0;
+float I_Alpha,I_Beta,Id,Iq;
 
 Motor_Parameter Motor = {7, 123.748848f, 0};
 Mode Board_Mode=DUTY;
@@ -66,11 +70,23 @@ uint8_t Measure_Res_Flag=0;
 uint8_t Measure_Ind_Flag=0;
 //uint8_t Encoder_Direction = 0;
 
+float Uq,Ud; // 电流环的输出值
+float Base_Uq,Uq_Amp;
 float Id_Set=0;
 float Iq_Set=0.6f;
 
-float Phi = 90;
+float Phi = 0;
 float Position_Offset = 132; 
+float Duty_Amp_Value;
+typedef struct{
+    float last_result;
+}Filter;
+
+Filter Base_Speed_Filter,Speed_Amp_Filter;
+Filter Speed_Observe_Filter;
+
+float speed_observed;
+
 // This var is used to align the offset of propeller. 旋翼头的零点
 // 定义该零点为
 /*
@@ -99,13 +115,42 @@ struct masure_sample{
     float measure_ind_state; // special used in measure ind;
 }Measure_Sample;
 
-
+/*
 PID_S Id_PID ={
-    .KP=2,
+    .KP=0.3f,
     .KD=0,
-    .KI=2,
+    .KI=100.0f,
     .I_TIME=  1.0f/FOC_FREQ,
     .i_max = __FLT_MAX__,
+    .I_ERR_LIMIT =__FLT_MAX__,
+    };
+*/
+/*
+    电流环传递函数：(5K采样率 P=0.3 float精度)
+                  4.144e07 (+/- 4.756e05)                                             
+  ------------------------------------------------                                
+  s^2 + 7236 (+/- 126) s + 1.103e07 (+/- 1.212e05)  
+*/
+
+/*
+    电流环传递函数：(5K采样率 P=0.3 float精度 将滤波系数改为0.8后) 65.47%
+                 2.303e08 (+/- 1.612e06)                                          
+  ------------------------------------------------------                          
+  s^2 + 1.326e04 (+/- 185.9) s + 6.137e07 (+/- 3.991e05)    
+*/
+
+/*
+                 6.627e07 (+/- 6.659e06)                                    
+  -----------------------------------------------------                     
+  s^2 + 1.938e04 (+/- 1985) s + 1.835e07 (+/- 1.844e06)  
+95%*/
+
+PID_S Id_PID ={
+    .KP=0.27f,//0.27f,//0.211,
+    .KD=0,
+    .KI=1060.0f,//1060.0f,//275,
+    .I_TIME=  1.0f/FOC_FREQ,
+    .i_out_max = 8.0f,
     .I_ERR_LIMIT =__FLT_MAX__,
     };
 
@@ -114,26 +159,35 @@ PID_S Special_Id_PID={
     .KD=0,
     .KI=0,
     .I_TIME=  1.0f/FOC_FREQ,
-    .i_max = __FLT_MAX__,
+    .i_out_max = __FLT_MAX__,
     .I_ERR_LIMIT =__FLT_MAX__,
 };
 
 PID_S Iq_PID = {
-    .KP=2,
+    .KP=0.27f,//0.27f,//0.211f,
     .KD=0,
-    .KI=1.5,
+    .KI=1060.0f,//1060.0f,//275.0f,
     .I_TIME=  1.0f/FOC_FREQ,
-    .i_max = __FLT_MAX__,
-    .I_ERR_LIMIT = __FLT_MAX__, 
+    .i_out_max = 8.0f,
+    .I_ERR_LIMIT =__FLT_MAX__, 
     }; // 启动电流挺大的
 
 PID_S Speed_PID={
-    .KP=0.00045f,
-    .KD=0,
-    .KI=0.00015f,
-    .I_TIME= 1.0f/SPEED_FREQ,
-    .i_max = __FLT_MAX__,
-    .I_ERR_LIMIT =  2000
+    .KP=1.0f,//0.94f,//0.1f,//0.12f,
+    .KD=0.0003912f,
+    .KI=0.0f,//27.0f,//3.6f,
+    .I_TIME= 2.0f/FOC_FREQ,
+    .i_out_max = 20.0f,
+    .I_ERR_LIMIT =  __FLT_MAX__
+    };
+
+PID_S Special_Speed_PID={
+    .KP=2.9f,//1.158f,//0.38f,//0.12f,
+    .KD=0.001085f,
+    .KI=0.0f,//38.39f,//1.2f,
+    .I_TIME= 2.0f/FOC_FREQ,
+    .i_out_max = __FLT_MAX__,
+    .I_ERR_LIMIT =  __FLT_MAX__
     };
 
 PID_S Position_PID={
@@ -141,7 +195,7 @@ PID_S Position_PID={
     .KD=0,
     .KI=0.1,
     .I_TIME=1.0f/POSITION_FREQ,
-    .i_max = __FLT_MAX__,
+    .i_out_max = __FLT_MAX__,
     .I_ERR_LIMIT = 5 
     };
 uint8_t FOC_Flag=0;
@@ -154,7 +208,24 @@ void PID_I_Clear(){
     Iq_PID.i=0;
     Id_PID.i=0;
     Speed_PID.i=0;
+    Special_Speed_PID.i=0;
     Position_PID.i=0;
+}
+
+#define SAFE_CURRENT    15
+static uint8_t Current_Protect_Cnt;
+inline void Current_Protect(float id,float iq){
+    if(fabsf(id)>SAFE_CURRENT || fabsf(iq)>SAFE_CURRENT){
+        Current_Protect_Cnt++;
+    }else{
+        Current_Protect_Cnt=0;
+        return ;
+    }
+
+    if(Current_Protect_Cnt>25){
+        FOC_Flag=0;
+        uprintf("Over Curr!\r\n");
+    }
 }
 
 // 该函数用于处理暗室长曝光频闪
@@ -241,7 +312,7 @@ void Foc_Init(){
   #ifdef DRV8302
     HAL_GPIO_WritePin(EN_GATE_GPIO_Port,EN_GATE_Pin,GPIO_PIN_SET);
   #endif
-  Current_ADC_Init(20);
+  Current_ADC_Init(1000);
 
   //HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 2, 0);
   //HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
@@ -264,8 +335,8 @@ void Clark_Conv(float ia, float ic, float *ialpha, float *ibeta)
     // 与硬件上的正负相反
 
     float ib = -(ia+ic);
-    //*ialpha = 1.5f*ia;
-    //*ibeta = SQRT3_2 * ib + SQRT3_2* (ib + ia);
+    //*I_Alpha = 1.5f*ia;
+    //*I_Beta = SQRT3_2 * ib + SQRT3_2* (ib + ia);
     *ialpha = ia;
     *ibeta = SQRT3_3 * ib + SQRT3_3* (ib + ia); 
     // 恒幅值变换
@@ -293,65 +364,213 @@ void Reverse_Park_Conv(float q,float d,float theta,float *alpha,float *beta){
 
 
 void Current_Control(){
-    float Ud=PID_Control(&Id_PID,Id_Set,id);
-    float Uq=PID_Control(&Iq_PID,Iq_Set,iq);
+    Ud=PID_Control(&Id_PID,Id_Set,Id);
+    Uq=PID_Control(&Iq_PID,Iq_Set,Iq);
 
     float Ualpha,Ubeta;
     Reverse_Park_Conv(Uq,Ud,Position_Phase_Degree,&Ualpha,&Ubeta);
 
-    SVPWM_Alpha_Beta(Ualpha,Ubeta,input_voltage);
+    SVPWM_Alpha_Beta(Ualpha,Ubeta,Input_Voltage);
     if(Measure_Res_Flag){
         float u = sqrtf(Ualpha*Ualpha+Ubeta*Ubeta);
-        float i = sqrtf(iq*iq+id*id);
+        float i = sqrtf(Iq*Iq+Id*Id);
         Measure_Sample.i_sum+=i;
         Measure_Sample.u_sum+=u;
         Measure_Sample.cnt++;
     }
 }
 
+float last_phi;
+float cos_val,cos_val_last_phi;
+
+void Special_Current_Control(){
+    float theta;
+
+    float theta_last_phi; // 基于上次的phi计算的theta
+    float theta_delay;
+
+
+    float sub;
+    Ud=PID_Control(&Id_PID,Id_Set,Id);
+
+    theta = (Position_Degree-Position_Offset-Phi)/180.0f*3.1415926f;   // 基于新的phi计算的theta
+    theta_last_phi = (Position_Degree-Position_Offset-last_phi)/180.0f*3.1415926f; //基于上次的phi计算的theta
+
+    theta_delay = atan2f(-speed_observed*2*PI,1496.0f);  // 根据速度，计算得到的电流滞后电压的角度（此值为负数）
+    theta += theta_delay;
+    theta_last_phi +=theta_delay;
+
+    cos_val= arm_cos_f32(theta);
+    cos_val_last_phi = arm_cos_f32(theta_last_phi);  // 计算新旧两个phi的cos值
+
+    sub = fabsf(cos_val-cos_val_last_phi);
+    if(sub<0.05f){// 如果cos值之差小于0.2f，那么直接切换到新值
+        Uq = Base_Uq+Uq_Amp*cos_val;
+        last_phi = Phi;
+    }else{
+        Uq = Base_Uq+Uq_Amp*cos_val_last_phi; // 否则还是用旧值，等到新旧两个cos即将相交的时候再切换
+    }
+
+    //Uq=Base_Uq+Uq_Amp*arm_cos_f32(theta);
+
+    float Ualpha,Ubeta;
+    Reverse_Park_Conv(Uq,Ud,Position_Phase_Degree,&Ualpha,&Ubeta);
+
+    SVPWM_Alpha_Beta(Ualpha,Ubeta,Input_Voltage);
+}
+
+
+float position_observed;
+
+float speed_observed2;
+void Speed_Observe(){
+    static float last_position;
+    float sub =  (position_observed - last_position) ;
+    if(sub<-180){
+        sub+=360;
+    }else if(sub>180){
+        sub-=360;
+    }
+    float now_speed = sub * FOC_FREQ;
+    speed_observed=0.96*speed_observed+ 0.04*now_speed;
+
+    last_position = position_observed;
+    position_observed =0.9*(position_observed+speed_observed / FOC_FREQ)+ 0.1*Position_Degree;
+    position_observed=Position_Degree;
+}
 
 #define GET_CURRENT(x)     (GET_SHUNT_VOLTAGE(current_adc_offset[x],current_adc_value[x])/SHUNT_RES)
 #define Limit(value,max)     if(value>max)value=max;else if(value<-max)value=-max
 const int Speed_Control_CNT_MAX = FOC_FREQ/SPEED_FREQ;
 const int Position_Control_CNT_MAX = FOC_FREQ/POSITION_FREQ;
 
+inline float phi_compensate(float speed_amp,float speed,float compensate_angle){
+    float phi=0;
+    float t=0;
+
+    // 先求平均的速度差 (V最大 - V一般时候)/2
+    if(speed_amp<0.1f){  // 防止除0错误
+        return 0;
+    }
+    float delta_v_degree = speed_amp/2.0f*360.0f;  // speed_amp 的单位是RPS
+    t = compensate_angle / delta_v_degree;
+
+    phi = t*speed*360;
+    return phi;
+
+}
+
+
+
+/*
+    构造一个前置滤波器来消掉PI控制器引入的零点
+    该滤波器传递函数为：G = a/(s+a)
+*/
+float Lead_Filter(float a,float dt,float input,Filter * f){
+    float result;
+    //float static last_result;
+
+    result= (dt*a*input + f->last_result)/(a*dt+1);
+    f->last_result = result;
+
+    return result;
+}
+/*
+    超前校正网络
+            1+a*tau*s
+    G = ------------
+            a*(1+tau*s)
+*/
+float Lead_Test_In =0;
+float Lead_Test_Out =0;
+float Lead_Compensator(float a,float tau,float dt,float input){
+    static float last_input;
+    static float last_result;
+
+    float result;
+
+    result =(input + a*tau*(input-last_input)/dt + a*tau*last_result/dt)/(a+a*tau/dt);
+    last_input = input;
+    last_result = result;
+    return result;
+}
+
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
     float temp_iq,temp_id;
+    static int speed_control_cnt=0;
     static int current_control_cnt=0;
 
     if(hadc->Instance==CURRENT_ADC){
         Check_Mode();
+        //Lead_Test_Out = Lead_Compensator(5.667f,0.00175f,1/20000.0f,Lead_Test_In);
+        /*
         if(current_control_cnt%Position_Control_CNT_MAX==0){
            if(Board_Mode == POSITION){
                 Position_Control();
             }
         }
-        if(current_control_cnt%Speed_Control_CNT_MAX==0){
-            if(Board_Mode >= SPEED){
-                Speed_Control();
-            }
-        }
-        current_control_cnt++;
-        if(current_control_cnt==FOC_FREQ/2/2){
-            current_control_cnt=0;
-        }
+        */
+       
         HAL_GPIO_WritePin(GPIOC,LED_GREEN_Pin,GPIO_PIN_SET);   
 
-        UTILS_LP_FAST(current[0],GET_CURRENT(0),0.1);
-        UTILS_LP_FAST(current[1],GET_CURRENT(1),0.1);
+        UTILS_LP_FAST(current[0],GET_CURRENT(0),0.1f);
+        UTILS_LP_FAST(current[1],GET_CURRENT(1),0.1f);
 
-        UTILS_LP_FAST(input_voltage,ADCVAL_TO_VOLTAGE(current_adc_value[2])*(VOLTAGE_RES1+VOLTAGE_RES2)/VOLTAGE_RES2,0.1f);
+        UTILS_LP_FAST(Input_Voltage,ADCVAL_TO_VOLTAGE(current_adc_value[2])*(VOLTAGE_RES1+VOLTAGE_RES2)/VOLTAGE_RES2,0.1f);
 
-        Clark_Conv(current[1],current[0],&ialpha,&ibeta);
+        Clark_Conv(current[1],current[0],&I_Alpha,&I_Beta);
     
         Position = Get_Position();   
-        Get_Speed();
         Position_Degree = Position_to_Rad_Dgree(Position,1);
         Position_Phase_Degree = Position_Degree * Motor.Pairs-Motor.Position_Phase_Offset;
+        //Speed_Observe();
+        Get_Speed();
 
-        Park_Conv(ialpha,ibeta,Position_Phase_Degree,&temp_iq,&temp_id);
-        UTILS_LP_FAST(iq,temp_iq,0.1);
-        UTILS_LP_FAST(id,temp_id,0.1);
+        if(speed_control_cnt==1){
+            if(Board_Mode >= SPEED){
+                if(Board_Mode == SPECIAL_SPEED){
+                    static float last_base_speed,last_amp_value;
+                    static uint8_t close_amp_flag;
+                    float amp_value;
+                    float sub;
+                    float temp_phi=0;
+                    float temp_base_speed,temp_speed_amp;
+                    temp_base_speed =Lead_Filter(1000,Special_Speed_PID.I_TIME,Base_Speed,&Base_Speed_Filter);
+                    temp_speed_amp = Lead_Filter(1000,Special_Speed_PID.I_TIME,Speed_Amp,&Speed_Amp_Filter);
+
+                    sub=fabsf(Base_Speed-last_base_speed);
+                    amp_value=temp_speed_amp* arm_cos_f32((Position_Degree-Position_Offset-Phi+temp_phi)/180.0f*3.1415926f); 
+
+                    if(!close_amp_flag && Base_Speed>35 && sub>2.5f){  // 在高速情况下，要提速（增加base_Speed）
+                        close_amp_flag=1;    // 把amp关了，记录此时的amp的值
+                        last_amp_value = amp_value;
+                    }
+                    last_base_speed = Base_Speed;
+                    
+                    if(close_amp_flag){  // amp关了的情况下，使用在关amp瞬间的amp_value
+                        Speed_Set = temp_base_speed + last_amp_value;
+                        if(fabsf(Iq)<6.0f && fabsf(amp_value-last_amp_value)<0.2f){
+                            close_amp_flag=0;  
+                            // 如果IQ<6，说明速度已经提上去了
+                            // 此时在和上一次停止amp差不多的位置，再把amp开了
+                        }
+                    }else{
+                        Speed_Set = temp_base_speed + amp_value;
+                    }
+                    //temp_phi = phi_compensate(temp_speed_amp,temp_base_speed,15);
+                    
+                }
+                Speed_Control();
+            }
+            speed_control_cnt=0;
+        }else{
+            speed_control_cnt++;
+        }
+        Park_Conv(I_Alpha,I_Beta,Position_Phase_Degree,&temp_iq,&temp_id);
+        Iq=temp_iq;Id=temp_id;
+        Current_Protect(Id,Iq);
+        //UTILS_LP_FAST(Iq,temp_iq,0.8f);
+        //UTILS_LP_FAST(Id,temp_id,0.8f);
         HAL_GPIO_WritePin(GPIOC,LED_GREEN_Pin,GPIO_PIN_RESET);   
 
 #ifdef CAMERA_SUPPORT
@@ -359,14 +578,17 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 #endif
 
         if(FOC_Flag){
-            if(Board_Mode>=CURRENT){
+            if(Board_Mode==CURRENT_DUTY){
+                Special_Current_Control();
+            }
+            else if(Board_Mode>=CURRENT){
+                //Iq_Set = Base_Iq + Iq_Amp *  arm_cos_f32((Position_Degree-Position_Offset-Phi)/180.0f*3.1415926f);
                 Current_Control();
             }else if(Board_Mode == DUTY){
-                float duty = Base_Duty + Duty_Amp * arm_cos_f32((Position_Degree-Position_Offset-Phi)/180.0f*3.1415926f);
-                float out = PID_Control(&Special_Id_PID,0,id);
-                Limit(out,20); 
-                float leading_angle = 90 - out;  // 超前角度
-                SVPWM(Position_Phase_Degree+leading_angle,duty);
+                float theta_delay = atan2f(-speed_observed*2*PI,1496.0f);
+                Duty_Amp_Value = Duty_Amp * arm_cos_f32((Position_Degree-Position_Offset-Phi+theta_delay)/180.0f*3.1415926f);
+                float duty = Base_Duty + Duty_Amp_Value;
+                SVPWM(Position_Phase_Degree+90,duty);
             }
         }else{
             if(Board_Mode!=TEST)
@@ -376,6 +598,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
         send_debug_wave(&wg2);
 
         send_debug_wave(&wg3);
+        send_debug_wave(&wg4);
 
         if(Measure_Ind_Flag)
             Measure_Ind_Handler();
@@ -424,33 +647,33 @@ void Measure_Ind_Handler(){
         temp_ccr.ccrc=0;
         SVPWM_Step(temp_ccr);
     }else if(Measure_Sample.measure_ind_state==5){
-        temp_ccr.ccra = temp_ccr.ccrc = now_duty;
-        temp_ccr.ccrc = 0;
+        temp_ccr.ccrb = temp_ccr.ccrc = now_duty;
+        temp_ccr.ccra = 0;
         SVPWM_Step(temp_ccr);
     }else if(Measure_Sample.measure_ind_state==6){
-        Measure_Sample.i_sum += fabsf(GET_CURRENT(CURR_A_INDEX));
-        Measure_Sample.u_sum += input_voltage;
+        Measure_Sample.i_sum += fabsf(GET_CURRENT(CURR_A_INDEX));   
+        Measure_Sample.u_sum += Input_Voltage;
         Measure_Sample.cnt ++;
         temp_ccr.ccra = temp_ccr.ccrb = temp_ccr.ccrc =0;
         SVPWM_Step(temp_ccr);
     }else if(Measure_Sample.measure_ind_state==11){
-        temp_ccr.ccrb = temp_ccr.ccrc = now_duty;
-        temp_ccr.ccra = 0;
+        temp_ccr.ccrb = temp_ccr.ccra = now_duty;
+        temp_ccr.ccrc = 0;
         SVPWM_Step(temp_ccr);
     }else if(Measure_Sample.measure_ind_state==12){
-        Measure_Sample.i_sum += fabsf(GET_CURRENT(CURR_C_INDEX));
-        Measure_Sample.u_sum += input_voltage;
+        Measure_Sample.i_sum += fabsf(GET_CURRENT(CURR_C_INDEX)); 
+        Measure_Sample.u_sum += Input_Voltage;
         Measure_Sample.cnt ++;
 
         temp_ccr.ccra = temp_ccr.ccrb = temp_ccr.ccrc =0;
         SVPWM_Step(temp_ccr);
     }else if(Measure_Sample.measure_ind_state==17){
         temp_ccr.ccra = temp_ccr.ccrc = now_duty;
-        temp_ccr.ccra = 0;
+        temp_ccr.ccrb = 0;
         SVPWM_Step(temp_ccr);
     }else if(Measure_Sample.measure_ind_state==18){
-        Measure_Sample.i_sum += fabsf(GET_CURRENT(CURR_C_INDEX)) + fabsf(GET_CURRENT(CURR_A_INDEX));
-        Measure_Sample.u_sum += input_voltage;
+        Measure_Sample.i_sum += fabsf(GET_CURRENT(CURR_C_INDEX)) + fabsf(GET_CURRENT(CURR_A_INDEX));  
+        Measure_Sample.u_sum += Input_Voltage;
         Measure_Sample.cnt ++;
 
         temp_ccr.ccra = temp_ccr.ccrb = temp_ccr.ccrc =0;
@@ -476,7 +699,7 @@ float Measure_Res(){
     Measure_Sample.cnt=0;
 
     Motor.Pairs = 0 ;
-    Motor.Position_Phase_Offset = 0; // do so to cancel the park_conv, then the iq = ibeta, id = ialpha
+    Motor.Position_Phase_Offset = 0; // do so to cancel the park_conv, then the Iq = I_Beta, Id = I_Alpha
     
     Id_Set=0;
     Iq_Set=0.5;
@@ -571,7 +794,7 @@ void Measure_Ind(){
     float di = Measure_Sample.i_sum/100.0f;
     float u = Measure_Sample.u_sum/100.0f;
     float dt = TIM1->ARR*Measure_Sample.measure_ind_duty/FOC_TIM_FREQ;
-    float L = u*dt/di;
+    float L = u*dt/di *2/3;
 
     uprintf_polling("di:%f,u:%f,dt:%f,ind:%f \r\n",di,u,dt,L);
 
@@ -659,7 +882,10 @@ void Openloop_Runing(float duty, float freq, int8_t direction, float rps)
     //SVPWM(theta, duty);
 }
 
+float Ka=130.0f,b;  //加速度系数
+float Kb=0.01f; // 编码器得到的速度系数
 static void Get_Speed(){
+    
     static float last_position_phase;
     float sub=0;
     sub= Position_Degree - last_position_phase;
@@ -668,16 +894,38 @@ static void Get_Speed(){
     }else if(sub>180){
         sub-=360;
     }
-    UTILS_LP_FAST(Speed,sub*SPEED_FREQ,0.4);
+    UTILS_LP_FAST(Speed,FOC_FREQ/360.0f*sub,0.04f);
     last_position_phase = Position_Degree;
+
+    float a = Ka*Iq+b;
+    float observe_sub = Speed-speed_observed;
+    speed_observed+= a*1.0f/FOC_FREQ+observe_sub*Kb;
+    //Speed = speed_observed / 360.0f;
+
+    speed_observed2 = Lead_Filter(4.83f,1.0f/FOC_FREQ,27.2f*Iq,&Speed_Observe_Filter);
 }
+
+float Lead_Compensator_In;
 static void Speed_Control(){
+    if(Board_Mode==SPECIAL_SPEED){
+        //Speed_Set_Filter = Lead_Filter(Special_Speed_PID.KI/Special_Speed_PID.KP,Special_Speed_PID.I_TIME,Speed_Set);
+        
+        Iq_Set=PID_Control(&Special_Speed_PID,Speed_Set,speed_observed); 
+        //Iq_Set =  Lead_Compensator(5.667f,0.00175f,Speed_PID.I_TIME,Lead_Compensator_In);
+    }else{
+        //Speed_Set_Filter = Lead_Filter(Speed_PID.KI/Speed_PID.KP,Speed_PID.I_TIME,Speed_Set);
+        Iq_Set=PID_Control(&Speed_PID,Speed_Set,speed_observed);
+        //Iq_Set = Lead_Compensator(5.667f,0.00175f,Speed_PID.I_TIME,Lead_Compensator_In);
+    }
 
-    //Get_Speed();
-    Iq_Set=PID_Control(&Speed_PID,Speed_Set,Speed);
-    //last_position_phase = Position_Degree;
+    
 
- 
+    if(Iq_Set>15){
+        Iq_Set=15;
+    }else if(Iq_Set<-15){
+        Iq_Set=-15;
+    }
+
 }
 
 static void Position_Control(){
@@ -698,10 +946,16 @@ static void Position_Control(){
 
 }
 
+#include "can.h"
 inline void Mode_Enter_Init(){
     switch(Board_Mode){
         case IDLE:
             FOC_STOP();
+        break;
+        case SAFE_SPEED:
+            FOC_Flag=0;
+            uprintf("CURRENT_PROTECT!\r\n");
+            CAN_Send_Message(Board_CAN_ID+1,"CUR",3);
         break;
         default:
             PID_I_Clear();
@@ -717,35 +971,3 @@ inline void Check_Mode(){
     }
 }
 
- 
-
-/*
-1ms中断太慢了，无法满足精度要求。
-换成在电流中断中处理。
-
-const int Speed_Control_CNT_MAX = TIM7_FREQ/SPEED_FREQ;
-const int Position_COntrol_CNT_MAX = TIM7_FREQ/POSITION_FREQ;
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-
-
-  static int ms_cnt;
-
-  if(htim->Instance == TIM7){
-      // 1ms Interupt
-    ms_cnt++;
-    if(ms_cnt%Position_COntrol_CNT_MAX==0){
-        Position_Control();
-    }
-    if(ms_cnt%Speed_Control_CNT_MAX==0){
-        Speed_Control();
-    }
-    if(ms_cnt==1000){
-        ms_cnt=0;
-    }
-
-  }
-
-}
-
-*/

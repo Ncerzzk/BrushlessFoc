@@ -36,7 +36,7 @@ build_my/foc.o: Src/foc.c Inc/tim.h Inc/main.h \
  Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h Inc/main.h \
  Inc/adc.h mylib/uart_ext.h Src/foc.h Src/SVPWM.h mylib/pid.h \
  mylib/as5047.h Drivers/CMSIS/DSP/Include/arm_math.h Inc/gpio.h \
- Inc/utils.h mylib/debug_utils.h
+ Inc/utils.h mylib/debug_utils.h Inc/can.h
 
 Inc/tim.h:
 
@@ -137,3 +137,5 @@ Inc/gpio.h:
 Inc/utils.h:
 
 mylib/debug_utils.h:
+
+Inc/can.h:
