@@ -184,7 +184,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
       Base_Duty = Q0152float(*(int16_t *)RxData);
       Duty_Amp = Q0152float(*((int16_t *)RxData+1)); 
       Phi = *((float *)RxData+1); 
-      //uprintf("duty:%f amp:%f phi:%f\r\n",Base_Duty,Duty_Amp,Phi);
+      uprintf("duty:%f amp:%f phi:%f\r\n",Base_Duty,Duty_Amp,Phi);
     }
 
     //uprintf("speed:%f amp:%f phi:%f\r\n",Base_Speed,Speed_Amp,Phi);

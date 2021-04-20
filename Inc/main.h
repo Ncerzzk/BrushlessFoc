@@ -168,7 +168,7 @@ void Error_Handler(void);
 #define A_CURRENT_ADC_GPIO_PORT GPIOC 
 
 #define GAIN    50.0f
-#define SHUNT_RES     0.003f
+#define SHUNT_RES     0.001f
 
 #define VOLTAGE_RES1    100000.0f
 #define VOLTAGE_RES2    10000.0f

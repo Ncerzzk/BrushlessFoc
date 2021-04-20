@@ -212,17 +212,18 @@ void PID_I_Clear(){
     Position_PID.i=0;
 }
 
-#define SAFE_CURRENT    15
+#define SAFE_CURRENT    20
+#define OVER_CURRENT    SAFE_CURRENT+3
 static uint8_t Current_Protect_Cnt;
 inline void Current_Protect(float id,float iq){
-    if(fabsf(id)>SAFE_CURRENT || fabsf(iq)>SAFE_CURRENT){
+    if(fabsf(id)>OVER_CURRENT || fabsf(iq)>OVER_CURRENT){
         Current_Protect_Cnt++;
     }else{
         Current_Protect_Cnt=0;
         return ;
     }
 
-    if(Current_Protect_Cnt>25){
+    if(Current_Protect_Cnt>50){
         FOC_Flag=0;
         uprintf("Over Curr!\r\n");
     }
@@ -909,7 +910,6 @@ float Lead_Compensator_In;
 static void Speed_Control(){
     if(Board_Mode==SPECIAL_SPEED){
         //Speed_Set_Filter = Lead_Filter(Special_Speed_PID.KI/Special_Speed_PID.KP,Special_Speed_PID.I_TIME,Speed_Set);
-        
         Iq_Set=PID_Control(&Special_Speed_PID,Speed_Set,speed_observed); 
         //Iq_Set =  Lead_Compensator(5.667f,0.00175f,Speed_PID.I_TIME,Lead_Compensator_In);
     }else{
@@ -920,10 +920,10 @@ static void Speed_Control(){
 
     
 
-    if(Iq_Set>15){
-        Iq_Set=15;
-    }else if(Iq_Set<-15){
-        Iq_Set=-15;
+    if(Iq_Set>SAFE_CURRENT){
+        Iq_Set=SAFE_CURRENT;
+    }else if(Iq_Set<-SAFE_CURRENT){
+        Iq_Set=-SAFE_CURRENT;
     }
 
 }
