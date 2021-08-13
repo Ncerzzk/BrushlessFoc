@@ -13,9 +13,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: GNU Arm Embedded Toolchain
-    # You may pin to the exact commit or the version.
-    # uses: ryanwinter/arm-none-eabi-gcc@cd4320c47a50058e479f401604ba28be565e46ac
-      uses: ryanwinter/arm-none-eabi-gcc@v2.0.1
+    - name: arm-none-eabi-gcc
+      # You may pin to the exact commit or the version.
+      # uses: fiam/arm-none-eabi-gcc@77f4527db18a17bf6def2cfeeea231f7bfa50902
+      uses: fiam/arm-none-eabi-gcc@v1.0.2
+      with:
+        # GNU Embedded Toolchain for Arm release name, in the V-YYYY-qZ format (e.g. "9-2019-q4")
+        release: # optional
+        # Directory to unpack GCC to. Defaults to a temporary directory.
+        directory: # optional
     - name: make
       run: make
